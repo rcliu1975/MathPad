@@ -3,6 +3,8 @@
 
 EngineeringPaper.xyz is a web app for engineering calculations that handles unit conversion/checking automatically and also supports plotting, solving systems of equations, and documenting your calculations (see the [official blog](https://blog.engineeringpaper.xyz) for many examples). It's easy to share your calculations by creating a [shareable link](https://engineeringpaper.xyz/oMbWLXMZ6ChQ3g3ZxRbJQD) that anyone can open and build off of. Additionaly, you can save and open your files locally if you prefer not to save to the cloud. EngineeringPaper.xyz runs on Mac, Windows, Linux, and ChromeOS and works on all of the major browsers. Additionally, EngineeringPaper.xyz is designed to run well on Android and iOS devices. [Launch EngineeringPaper.xyz](https://EngineeringPaper.xyz) in your browser to try it out.
 
+This repository is a fork of [mgreminger/EngineeringPaper.xyz](https://github.com/mgreminger/EngineeringPaper.xyz).
+
 ![platforms_cropped](https://user-images.githubusercontent.com/6439649/212774749-caab6190-7a45-4f04-a31c-ffdb6b6e4b96.png)
 
 
@@ -45,6 +47,20 @@ npm install
 # Run local dev server with live reload (point browser to localhost:8788)
 npm run dev
 ```
+Because MathPad is maintained as a fork, keep the original repository configured as `upstream` so future updates from `mgreminger/EngineeringPaper.xyz` are easy to review and merge. A typical remote setup looks like this:
+``` bash
+origin   git@github.com:rcliu1975/MathPad
+upstream https://github.com/mgreminger/EngineeringPaper.xyz
+```
+You can check whether your local branch is ahead of or behind upstream with:
+``` bash
+git fetch upstream
+git rev-list --left-right --count HEAD...upstream/main
+git log --oneline upstream/main..HEAD
+git log --oneline HEAD..upstream/main
+```
+For `git rev-list --left-right --count`, an output such as `3 0` means your local `HEAD` is 3 commits ahead of `upstream/main` and 0 commits behind it.
+
 If you access the dev server through a reverse proxy or custom hostname, create a `.env.local` file from `.env.example` and set `MATHPAD_ALLOWED_HOSTS` to a comma-separated list of allowed hostnames before starting Vite.
 
 To build the production version of the site and run the test suite, run the following commands (if the dev server is still running after running the above commands, close it using Ctrl-C before running these commands).
