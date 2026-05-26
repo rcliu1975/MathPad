@@ -19,7 +19,7 @@
   import type { SystemDefinition } from "./cells/SystemCell.svelte";
   import type { FluidFunction } from "./cells/FluidCell.svelte";
   import type { CodeCellFunction } from "./cells/CodeCell.svelte";
-  import { isVisible, versionToDateString, debounce, saveFileBlob, sleep, createCustomUnits, checkPyodideRuntime } from "./utility";
+  import { isVisible, debounce, saveFileBlob, sleep, createCustomUnits, checkPyodideRuntime } from "./utility";
   import type { ModalInfo, RecentSheets, RecentSheetUrl, RecentSheetFile, StatementsAndSystems } from "./types";
   import type { Results } from "./resultTypes";
   import { getHash, API_GET_PATH, API_SAVE_PATH } from "./database/utility";
@@ -29,7 +29,6 @@
   import DocumentTitle from "./DocumentTitle.svelte";
   import UnitsDocumentation from "./UnitsDocumentation.svelte";
   import KeyboardShortcuts from "./KeyboardShortcuts.svelte";
-  import Terms from "./Terms.svelte";
   import RequestPersistentStorage from "./RequestPersistentStorage.svelte";
   import Updates from "./Updates.svelte";
   import InsertSheetModal from "./InsertSheetModal.svelte";
@@ -70,7 +69,6 @@
   import Help from "carbon-icons-svelte/lib/Help.svelte";
   import Launch from "carbon-icons-svelte/lib/Launch.svelte";
   import Keyboard from "carbon-icons-svelte/lib/Keyboard.svelte";
-  import InformationFilled from "carbon-icons-svelte/lib/InformationFilled.svelte";
   import ErrorFilled from "carbon-icons-svelte/lib/ErrorFilled.svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import Renew from "carbon-icons-svelte/lib/Renew.svelte";
@@ -97,12 +95,10 @@
 
   const tutorialHash = "fPMFb3PZhRKpfJuBaJ2HDR";
 
-  let termsAccepted = $state(appState.termsVersion);
-
   // need for File System Access API calls
   const fileTypes = [
             {
-              description: "EngineeringPaper.xyz Files",
+              description: "MathPad Files",
               accept: {"application/json": [".epxyz"]},
             }
           ];
@@ -381,20 +377,11 @@
 
       try {
         const previousVisit = await get('previousVisit');
-        const localTermsAccepted = await get('termsAccepted');
-        if (localTermsAccepted === undefined || localTermsAccepted === true) {
-          // need to check against true since this feature initially stored
-          // true in local storage when terms were accepted
-          termsAccepted = 0;
-        } else {
-          termsAccepted = localTermsAccepted;
-        }
         if (previousVisit) {
           firstTime = false;
         }
       } catch(e) {
         firstTime = true;
-        termsAccepted = 0;
         console.log(`Error checking if first use: ${e}`);
       }
 
@@ -497,31 +484,12 @@
     await tick();
   }
 
-  function showTerms() {
-    modalInfo = {
-      modalOpen: true,
-      state: "termsAndConditions",
-      heading: "Terms and Conditions"
-    };
-  }
-
   function showRequestPersistentStorage() {
     modalInfo = {
       modalOpen: true,
       state: "requestPersistentStorage",
       heading: "Enable Persistent Local Storage"
     };
-  }
-
-  async function acceptTerms() {
-    if (termsAccepted < appState.termsVersion) {
-      termsAccepted = appState.termsVersion;
-      try {
-          await set('termsAccepted', termsAccepted);
-      } catch (e) {
-          console.log(`Error updating termsAccepted entry: ${e}`);
-      }
-    }
   }
 
 
@@ -805,11 +773,6 @@
       } else {
         // navigation cancelled, restore previous path
         window.history.replaceState(currentStateObject, "", currentState);
-      }
-
-      if (firstTime && searchParams.get("modal") === "terms") {
-        window.history.replaceState(window.history.state, "", window.location.pathname)
-        showTerms();
       }
 
       refreshingSheet = false;
@@ -1221,7 +1184,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       modalInfo = {
         state: "error",
         error: `<p>Error regenerating sheet ${window.location}.
-This is most likely due to a bug in EngineeringPaper.xyz.
+This is most likely due to a bug in MathPad.
 If problem persists after attempting to refresh the page, please report problem to
 <a href="mailto:support@engineeringpaper.xyz?subject=Error Regenerating Sheet&body=Sheet that failed to load: ${encodeURIComponent(window.location.href)}">support@engineeringpaper.xyz</a>.  
 Please include a link to this sheet in the email to assist in debugging the problem. </p>`,
@@ -1459,7 +1422,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
     } else {
       modalInfo = {
         state: "error",
-        error: `Error Opening File. Make sure you have chosen a valid EngineeringPaper.xyz file.`,
+        error: `Error Opening File. Make sure you have chosen a valid MathPad file.`,
         modalOpen: true,
         heading: "Opening File"
       };
@@ -1483,9 +1446,9 @@ Please include a link to this sheet in the email to assist in debugging the prob
       modalInfo = {
         state: "error",
         error: `<p>${error} <br><br>
-Error parsing input file. Make sure your attempting to open an EngineeringPaper.xyz file.
+Error parsing input file. Make sure your attempting to open a valid MathPad file.
 <br><br>
-If this problem persists after verifying the file is an EngineeringPaper.xyz file,
+If this problem persists after verifying the file is a valid MathPad file,
 email support@engineeringpaper.xyz
 If possible, please attach the file that is not opening.
  </p>`,
@@ -1514,9 +1477,9 @@ If possible, please attach the file that is not opening.
       modalInfo = {
         state: "error",
         error: `<p>Error restoring file. <br><br>
-          Error parsing input file. Make sure your attempting to open an EngineeringPaper.xyz file.
+          Error parsing input file. Make sure your attempting to open a valid MathPad file.
 <br><br>
-If this problem persists after verifying the file is an EngineeringPaper.xyz file,
+If this problem persists after verifying the file is a valid MathPad file,
 email support@engineeringpaper.xyz
 with the file that is not opening attached, if possible. </p>`,
         modalOpen: true,
@@ -1578,10 +1541,10 @@ and the browser, where they were originally generated.
 <br><br>
 There are several possible causes for this error.
 Autosave checkpoints are stored locally on the browser that you are working on. Autosave checkpoints are not permanent 
-and may be deleted by your browser to free up space. EngineeringPaper.xyz will only retain the ${numCheckpoints} most recent checkpoints.
+and may be deleted by your browser to free up space. MathPad will only retain the ${numCheckpoints} most recent checkpoints.
 Some browsers, Safari for example, automatically delete local browser storage
 for a website that has not been visited in the previous 7 days. To request that your browser retains the storage used by
-EngineeringPaper.xyz, use the "Enable Persistent Local Storage" option on the left menu. 
+MathPad, use the "Enable Persistent Local Storage" option on the left menu. 
  </p>`,
         modalOpen: true,
         heading: "Restoring Sheet"
@@ -1595,7 +1558,7 @@ EngineeringPaper.xyz, use the "Enable Persistent Local Storage" option on the le
       modalInfo = {
         state: "error",
         error: `<p>Error restoring autosave checkpoint ${window.location}.
-This is most likely due to a bug in EngineeringPaper.xyz.
+This is most likely due to a bug in MathPad.
 If problem persists after attempting to refresh the page, please report problem to
 <a href="mailto:support@engineeringpaper.xyz?subject=Error Regenerating Sheet&body=Sheet that failed to load: ${encodeURIComponent(window.location.href)}">support@engineeringpaper.xyz</a>.  
 Please include a link to this sheet in the email to assist in debugging the problem. </p>`,
@@ -1700,12 +1663,12 @@ Please include a link to this sheet in the email to assist in debugging the prob
       try {
         sheetHash = getSheetHash(new URL(sheetUrl));
         if (sheetHash === "") {
-          throw new Error(`${sheetUrl} is not a valid EngineeringPaper.xyz sheet URL.`);
+          throw new Error(`${sheetUrl} is not a valid MathPad sheet URL.`);
         }
       } catch(error) {
         modalInfo = {
           state: "error",
-          error: `<p>Error inserting sheet "${sheetUrl ? sheetUrl : 'empty URL'}". The URL is not valid EngineeringPaper.xyz sheet.`,
+          error: `<p>Error inserting sheet "${sheetUrl ? sheetUrl : 'empty URL'}". The URL is not a valid MathPad sheet.`,
           modalOpen: true,
           heading: "Retrieving Sheet"
         };
@@ -1741,7 +1704,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       modalInfo = {
         state: "error",
         error: `<p>Error inserting sheet ${sheetUrl}.
-This is most likely due to a bug in EngineeringPaper.xyz.
+This is most likely due to a bug in MathPad.
 If problem persists after attempting to refresh the page, please report problem to
 <a href="mailto:support@engineeringpaper.xyz?subject=Error Regenerating Sheet&body=Sheet that failed to load: ${encodeURIComponent(sheetUrl)}">support@engineeringpaper.xyz</a>.  
 Please include a link to this sheet in the email to assist in debugging the problem. <br>${error} </p>`,
@@ -2004,7 +1967,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
       const sheetUrl = await uploadSheet(false);
       if (sheetUrl) {
-        markdown += `A live version of this calculation is available at [EngineeringPaper.xyz](${sheetUrl}).\n\n`;
+        markdown += `A live version of this calculation is available at [MathPad](${sheetUrl}).\n\n`;
       } else {
         markdown += `An error occurred generating a shareable link for this document.\n\n`;
       }
@@ -2021,7 +1984,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
                               getShareableLink: boolean,
                               centerEquations: boolean,
                               paperSize: "a4" | "letter"}) {
-    const markDown = "<!-- Created with EngineeringPaper.xyz -->\n" + 
+    const markDown = "<!-- Created with MathPad -->\n" + 
                      await getMarkdown(settings.getShareableLink, settings.centerEquations);
     const upload_blob = new Blob([markDown], {type: "text/markdown"});
 
@@ -2202,7 +2165,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
   }
 
   $effect(() => {
-    document.title = `EngineeringPaper.xyz: ${appState.title}`;
+    document.title = `MathPad: ${appState.title}`;
   });
 
 </script>
@@ -2560,7 +2523,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       slot="platform"
       onclick={() => appState.activeCell = -1}
     >
-      <img class="logo" src="logo_dark.svg" alt="EngineeringPaper.xyz">
+      <img class="logo" src="logo_dark.svg" alt="MathPad">
     </span>
     
     {#if serviceWorkerUpdateWaiting}
@@ -2778,10 +2741,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
             {/each}
           </SideNavMenu>
         {/if}
-        <SideNavLink 
-          on:click={() => showTerms()}
-          text="Terms and Conditions"
-        />
         <SideNavLink
           on:click={() => modalInfo = {
               modalOpen: true,
@@ -2806,7 +2765,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
           on:click={() => modalInfo = {
               modalOpen: true,
               state: "tryEpxyz",
-              heading: "Now Available at EPxyz.com"
+              heading: "Need the upstream site?"
           }}
           text=".xyz blocked? Try EPxyz.com"
         />
@@ -2862,7 +2821,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       />
 
       <div class="print-logo">
-        Created with: <img src="print_logo.png" alt="EngineeringPaper.xyz" height="26 px">
+        Created with: <img src="print_logo.png" alt="MathPad" height="26 px">
       </div>
 
       <div class="bottom-spacer" class:inIframe></div>
@@ -2889,80 +2848,61 @@ Please include a link to this sheet in the email to assist in debugging the prob
     />
   </div>
 
-  {#if (termsAccepted < appState.termsVersion) && !inIframe}
-    <div
-      class="status-footer"
-      onmousedown={e=>e.preventDefault()}
-    >
-      <InformationFilled color="#0f62fe"/>
-      <div>
-        Use of this software is subject to these  
-        <button
-          class="link"
-          onclick={showTerms}
-        >
-          Terms and Conditions
-        </button>  (updated {versionToDateString(appState.termsVersion)})
+  {#if noParsingErrors || appState.parsePending}
+    {#if (inDebounce || appState.parsePending) && !pyodideNotAvailable && pyodideLoaded}
+      <div class="status-footer">
+        <InlineLoading status="inactive" description="Updating..."/>
       </div>
-      <button onclick={acceptTerms}>Accept</button>
-    </div>
-  {:else}
-    {#if noParsingErrors || appState.parsePending}
-      {#if (inDebounce || appState.parsePending) && !pyodideNotAvailable && pyodideLoaded}
-        <div class="status-footer">
-          <InlineLoading status="inactive" description="Updating..."/>
-        </div>
-      {:else}
-        {#await pyodidePromise}
-          {#if !pyodideLoaded && !pyodideNotAvailable && !error}
-            <div class="status-footer promise">
-              <InlineLoading description="Loading Pyodide..."/>
-            </div>
-          {:else if pyodideLoaded && !pyodideNotAvailable}  
-            <div
-              class="status-footer promise"
-              onmousedown={e=>e.preventDefault()}
-            >
-              <InlineLoading description="Updating..."/>
-              {#if pyodideTimeout}
-                <button onclick={restartPyodide}>Restart Pyodide</button>
-              {/if}
-            </div>
-          {/if}
-        {:catch promiseError}
-          <div class="status-footer promise">
-            <InlineLoading status="error" description={promiseError}/>
-          </div>
-        {/await}
-      {/if}
-      {#if error && !inDebounce}
-        <div class="status-footer">
-          <InlineLoading status="error" description={`Error: ${error}`} />
-        </div>
-      {/if}
-      {#if pyodideNotAvailable}
-        <div class="status-footer">
-          <InlineLoading status="error" description={`Error: Pyodide failed to load.`} />
-        </div>
-      {/if}
     {:else}
-      <div class="status-footer" onmousedown={e=>e.preventDefault()}>
-        <ErrorFilled color="#da1e28"/>
-        <div>
-          Sheet cannot be evaluated due to a syntax error.
-          See this 
-          <a
-            href={`/${tutorialHash}`}
-            rel="nofollow"
-            onclick={(e) => handleLinkPushState(e, `/${tutorialHash}`)}
+      {#await pyodidePromise}
+        {#if !pyodideLoaded && !pyodideNotAvailable && !error}
+          <div class="status-footer promise">
+            <InlineLoading description="Loading Pyodide..."/>
+          </div>
+        {:else if pyodideLoaded && !pyodideNotAvailable}  
+          <div
+            class="status-footer promise"
+            onmousedown={e=>e.preventDefault()}
           >
-            tutorial
-          </a>
-          to learn how to use this app.
+            <InlineLoading description="Updating..."/>
+            {#if pyodideTimeout}
+              <button onclick={restartPyodide}>Restart Pyodide</button>
+            {/if}
+          </div>
+        {/if}
+      {:catch promiseError}
+        <div class="status-footer promise">
+          <InlineLoading status="error" description={promiseError}/>
         </div>
-        <button onclick={showSyntaxError}>Show Error</button>
+      {/await}
+    {/if}
+    {#if error && !inDebounce}
+      <div class="status-footer">
+        <InlineLoading status="error" description={`Error: ${error}`} />
       </div>
     {/if}
+    {#if pyodideNotAvailable}
+      <div class="status-footer">
+        <InlineLoading status="error" description={`Error: Pyodide failed to load.`} />
+      </div>
+    {/if}
+  {:else}
+    <div class="status-footer" onmousedown={e=>e.preventDefault()}>
+      <ErrorFilled color="#da1e28"/>
+      <div>
+        Sheet cannot be evaluated due to a syntax error.
+        See this 
+        <a
+          href={`/${tutorialHash}`}
+          rel="nofollow"
+          onclick={(e) => handleLinkPushState(e, `/${tutorialHash}`)}
+        >
+          tutorial
+        </a>
+        to learn how to use this app.
+      </div>
+      <button onclick={showSyntaxError}>Show Error</button>
+    </div>
   {/if}
 
   {#if !inIframe && showKeyboard}
@@ -3082,7 +3022,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         on:open
         on:close
         on:submit={() => uploadSheet()}
-        hasScrollingContent={["supportedUnits", "termsAndConditions",
+        hasScrollingContent={["supportedUnits",
                               "newVersion", "keyboardShortcuts",
                               "generateCode", "pyodideRuntimeWarning"].includes(modalInfo.state)}
         preventCloseOnClickOutside={!["supportedUnits", "bugReport", "tryEpxyz", "newVersion", "updateAvailable", 
@@ -3115,7 +3055,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         {:else if modalInfo.state === "restoring"}
           <InlineLoading description={`Restoring autosave checkpoint: ${window.location}`}/>
         {:else if modalInfo.state === "bugReport"}
-          <p>If you have discovered a bug in EngineeringPaper.xyz, 
+          <p>If you have discovered a bug in MathPad, 
             please send a bug report to 
             <a href={`mailto:support@engineeringpaper.xyz?subject=Bug Report&body=Sheet with issues: ${encodeURIComponent(window.location.href)}`}>support@engineeringpaper.xyz</a>.
             Please include a description of the problem. Additionally, it's best if you can include a link to the sheet that is experiencing the problem.
@@ -3124,9 +3064,8 @@ Please include a link to this sheet in the email to assist in debugging the prob
           <p>
             Some environments indiscriminately block all <em>.xyz</em> domains. For example,
             some school districts block all <em>.xyz</em> domains for their school issued 
-            Chromebooks. Since it's important to us that all of the EngineeringPaper.xyz
-            goodness is available to everyone, the full functionality of EngineeringPaper.xyz 
-            is now also available as a <em>.com</em> address at
+            Chromebooks. If you need access to the upstream EngineeringPaper.xyz service,
+            the same functionality is also available as a <em>.com</em> address at
             <a href="EPxyz.com" target="_blank">EPxyz.com</a>. The functionality is the same
             between the two domains and sheets saved on one can be opened on the other. 
             Shareable links are interchangeable as well. For example, 
@@ -3139,8 +3078,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
           <UnitsDocumentation />
         {:else if modalInfo.state === "keyboardShortcuts"}
           <KeyboardShortcuts />
-        {:else if modalInfo.state === "termsAndConditions"}
-          <Terms versionDateString={versionToDateString(appState.termsVersion)}/>
         {:else if modalInfo.state === "requestPersistentStorage"}
           <RequestPersistentStorage numCheckpoints={numCheckpoints} />
         {:else if modalInfo.state === "newVersion"}
@@ -3204,5 +3141,3 @@ Please include a link to this sheet in the email to assist in debugging the prob
   {/if}
 
 </div>
-
-

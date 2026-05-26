@@ -167,11 +167,11 @@
     flex-direction: row;
   }
 
-  .controls.left {
-    padding-right: 8px;
+  .controls.right {
+    padding-left: 8px;
   }
 
-  .controls.right {
+  .controls.left {
     padding-left: 8px;
   }
 
@@ -181,7 +181,7 @@
     padding-right: 9px;
     padding-top: 0px;
     padding-bottom: 0px;
-    padding: 5px;
+    padding: 3px 5px;
     border: 2px solid transparent;
     border-radius: 9px;
     content: contain;
@@ -220,39 +220,6 @@
 </style>
 
 <div class="container">
-  <div class="controls left">
-    <span class="up button-container">
-      <IconButton        
-        id={`up-${index}`}
-        click={()=>moveUp(index)}
-        title="Move Cell Up"
-      >
-        <ChevronUp />
-      </IconButton>
-    </span>
-    <span
-      role="none"
-      class="handle button-container"
-      bind:this={dragHandleElement}
-      onmousedown={dispatchStartDrag}
-    >
-      <IconButton
-        title="Drag to Move Cell"
-      >
-        <Draggable />
-      </IconButton>
-    </span>
-    <span class="down button-container">
-      <IconButton        
-        id={`down-${index}`}
-        click={()=>moveDown(index)}
-        title="Move Cell Down"
-      >
-        <ChevronDown />
-      </IconButton>
-    </span>
-  </div>
-
   <!-- The static element action to select is cell is made available through the keyboard shortcuts
        of Ctrl+ArrowUp and Ctrl+ArrowDown -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -384,6 +351,39 @@
     >
       <TrashCan />
     </IconButton>
+  </div>
+
+  <div class="controls left">
+    <span class="up button-container">
+      <IconButton        
+        id={`up-${index}`}
+        click={()=>moveUp(index)}
+        title="Move Cell Up"
+      >
+        <ChevronUp />
+      </IconButton>
+    </span>
+    <span
+      role="none"
+      class="handle button-container"
+      bind:this={dragHandleElement}
+      onmousedown={dispatchStartDrag}
+    >
+      <IconButton
+        title="Drag to Move Cell"
+      >
+        <Draggable />
+      </IconButton>
+    </span>
+    <span class="down button-container">
+      <IconButton        
+        id={`down-${index}`}
+        click={()=>moveDown(index)}
+        title="Move Cell Down"
+      >
+        <ChevronDown />
+      </IconButton>
+    </span>
   </div>
 
 </div>

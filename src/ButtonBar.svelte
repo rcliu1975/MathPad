@@ -65,29 +65,47 @@
 
   div.outer-container {
     display: flex;
-    gap: 6px;
+    gap: 4px;
+    align-items: center;
+    min-height: 0;
+    margin: -3px 0;
   }
 
   div.outer-container:not(.last) {
     opacity: 0;
-    transition: 0.3s;
+    transform: scaleY(0.6);
+    transform-origin: center;
+    transition: opacity 0.2s, transform 0.2s;
   }
 
   div.outer-container:not(.last):hover {
     opacity: 1;
-    transition: 0.3s;
+    transform: scaleY(1);
   }
 
   div.outer-container:focus-within {
     opacity: 1;
+    transform: scaleY(1);
   }
 
   hr {
     width: 47.5%;
     border: 0;
-    height: 2px;
+    height: 1px;
     border-radius: 1px;
     background: lightgray;
+  }
+
+  :global(div.outer-container button) {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  :global(div.outer-container div.icon) {
+    width: 12px;
+    height: 12px;
   }
 
   div.mobile-spacer {

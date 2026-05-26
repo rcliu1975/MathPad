@@ -12,7 +12,7 @@ import type { RuntimeInfo } from "./utility";
 export type ModalInfo = {
   state: "uploadSheet" | "uploadPending" | "success" | "error" | "requestPersistentStorage" |
          "retrieving" | "restoring" | "bugReport" | "tryEpxyz" | "supportedUnits" | 
-         "opening" | "saving" | "termsAndConditions" | "newVersion" | "insertSheet" |
+         "opening" | "saving" | "newVersion" | "insertSheet" |
          "keyboardShortcuts" | "updateAvailable" | "sheetSettings" | "generateCode" |
          "customMatrix" | "generatingDocument" | "downloadDocument" | "importingSpreadsheet" |
          "pyodideRuntimeWarning";
@@ -55,5 +55,4 @@ export type StatementsAndSystems = {
   simplifySymbolicExpressions: boolean;
   convertFloatsToFractions: boolean;
 }
-
 
