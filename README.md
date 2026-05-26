@@ -18,6 +18,10 @@ MathPad 是從 [engineeringpaper.xyz](https://engineeringpaper.xyz) / [mgreminge
 - 本機預覽與測試環境: Wrangler Pages
 - 端對端測試: Playwright
 
+## 主要修改項目
+
+1. 支援純量單位，以及 `giga`、`kilo` 等單位前綴。
+
 ## 開發需求
 
 - Node.js 20 以上
