@@ -23,6 +23,8 @@
     parsePending?: boolean;
     editable?: boolean;
     hidden?: boolean;
+    textColor?: string;
+    backgroundColor?: string;
     update?: (arg: {latex: string}) => void;
     enter?: () => void;
     shiftEnter?: () => void;
@@ -36,6 +38,8 @@
     parsePending = false,
     editable = false,
     hidden = false,
+    textColor = "#333333",
+    backgroundColor = "transparent",
     id,
     update,
     enter,
@@ -305,7 +309,9 @@
 
   math-field {
     font-size: 16px;
-    background-color: transparent;
+    color: var(--math-field-text-color, #333333);
+    background-color: var(--math-field-background-color, transparent);
+    border-radius: 4px;
   }
 
   math-field:focus {
@@ -358,6 +364,7 @@
 <math-field
   id={id}
   role="textbox math"
+  style={`--math-field-text-color: ${textColor}; --math-field-background-color: ${backgroundColor};`}
   min-font-scale=0.75
   max-matrix-cols={MAX_MATRIX_COLS}
   onfocusin={handleFocusIn}
@@ -371,7 +378,6 @@
   class:hidden
 >
 </math-field>
-
 
 
 

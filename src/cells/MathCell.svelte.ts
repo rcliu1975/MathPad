@@ -1,4 +1,4 @@
-import type { MathCellConfig } from "../sheet/Sheet";
+import { getSafeMathConfig, type MathCellConfig } from "../sheet/Sheet";
 import { BaseCell, type DatabaseMathCell } from "./BaseCell";
 import { MathField } from "./MathField.svelte";
 
@@ -15,10 +15,7 @@ export default class MathCell extends BaseCell {
       
       this.mathField = new MathField(arg.latex);
       if (arg.config) {
-        this.config = arg.config;
-        if (this.config.showIntermediateResults === undefined) {
-          this.config.showIntermediateResults = false;
-        }
+        this.config = getSafeMathConfig(arg.config);
       } else {
         this.config = null;        
       }

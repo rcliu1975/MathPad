@@ -57,6 +57,24 @@
     flex-direction: column;
     gap: 20px;
   }
+
+  div.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  label.color-control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  input.color-input {
+    width: 100%;
+    min-height: 40px;
+    padding: 4px;
+  }
 </style>
 
 <Checkbox
@@ -69,6 +87,35 @@
   <Checkbox
     bind:checked={currentMathCellConfig.showIntermediateResults}
     labelText="Show Intermediate Results"
+    on:change={() => update(null, true)}
+  />
+
+  <div class="color-grid">
+    <label class="color-control">
+      Math Text Color
+      <input
+        class="color-input"
+        type="color"
+        bind:value={currentMathCellConfig.textColor}
+        oninput={() => update(null, true)}
+      />
+    </label>
+
+    <label class="color-control">
+      Math Background Color
+      <input
+        class="color-input"
+        type="color"
+        bind:value={currentMathCellConfig.backgroundColor}
+        disabled={!currentMathCellConfig.useBackgroundColor}
+        oninput={() => update(null, true)}
+      />
+    </label>
+  </div>
+
+  <Checkbox
+    bind:checked={currentMathCellConfig.useBackgroundColor}
+    labelText="Show Background Color"
     on:change={() => update(null, true)}
   />
 

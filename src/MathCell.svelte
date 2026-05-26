@@ -46,6 +46,8 @@
 
   let result = $derived(appState.results[index]);
   let numberConfig = $derived(getNumberConfig());
+  let mathTextColor = $derived(numberConfig.textColor ?? "#333333");
+  let mathBackgroundColor = $derived(numberConfig.useBackgroundColor ? (numberConfig.backgroundColor ?? "#fff4bf") : "transparent");
 
   let error = $state("");
   let resultLatex = $state("");
@@ -601,6 +603,8 @@
 >
   <MathField
     editable={true}
+    textColor={mathTextColor}
+    backgroundColor={mathBackgroundColor}
     update={(e) => parseLatex(e.latex, index)}
     enter={() => insertMathCellAfter({detail: {index: index}})}
     shiftEnter={() => insertMathCellAfter({detail: {index: index}})}
@@ -621,6 +625,8 @@
     {#if result && !(result instanceof Array) && !renderResult}
       <MathField
         hidden={true}
+        textColor={mathTextColor}
+        backgroundColor={mathBackgroundColor}
         latex={`${resultLatex}${resultUnitsLatex}`}
       />
     {/if}
@@ -632,6 +638,8 @@
         <span class="hidden" id="{`result-units-${index}`}">{resultUnits}</span>
         <MathField
           hidden={appState.resultsInvalid}
+          textColor={mathTextColor}
+          backgroundColor={mathBackgroundColor}
           latex={`${resultLatex}${resultUnitsLatex}`}
         />
       {:else if renderResult}
@@ -684,8 +692,8 @@
       {/if}
 
       <IconButton
-        title="Edit Cell Number Format"
-        statusDotTitle="Edit Cell Number Format (Modified)"
+        title="Edit Cell Style and Number Format"
+        statusDotTitle="Edit Cell Style and Number Format (Modified)"
         id={`number-format-${index}`}
         click={handleUpdateNumberFormat}
         statusDot={Boolean(mathCell.config)}
@@ -697,4 +705,3 @@
   {/if}
   
 </span>
-
