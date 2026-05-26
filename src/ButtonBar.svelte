@@ -68,24 +68,28 @@
     gap: 4px;
     align-items: center;
     min-height: 0;
-    margin: -3px 0;
+    margin: -4px 0;
   }
 
   div.outer-container:not(.last) {
     opacity: 0;
     transform: scaleY(0.6);
     transform-origin: center;
-    transition: opacity 0.2s, transform 0.2s;
+    max-height: 6px;
+    overflow: hidden;
+    transition: opacity 0.2s, transform 0.2s, max-height 0.2s;
   }
 
   div.outer-container:not(.last):hover {
     opacity: 1;
     transform: scaleY(1);
+    max-height: 18px;
   }
 
   div.outer-container:focus-within {
     opacity: 1;
     transform: scaleY(1);
+    max-height: 18px;
   }
 
   hr {

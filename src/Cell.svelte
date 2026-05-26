@@ -181,7 +181,7 @@
     padding-right: 9px;
     padding-top: 0px;
     padding-bottom: 0px;
-    padding: 3px 5px;
+    padding: 1px 5px;
     border: 2px solid transparent;
     border-radius: 9px;
     content: contain;
