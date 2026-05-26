@@ -45,6 +45,8 @@ npm install
 # Run local dev server with live reload (point browser to localhost:8788)
 npm run dev
 ```
+If you access the dev server through a reverse proxy or custom hostname, create a `.env.local` file from `.env.example` and set `MATHPAD_ALLOWED_HOSTS` to a comma-separated list of allowed hostnames before starting Vite.
+
 To build the production version of the site and run the test suite, run the following commands (if the dev server is still running after running the above commands, close it using Ctrl-C before running these commands).
 Note that after running `npm run build`, the contents of the `public` folder 
 can be hosted as a static site on a web server.
