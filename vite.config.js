@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { optimizeCss } from 'carbon-preprocess-svelte';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -13,6 +13,11 @@ const outDir = 'dist';
 
 export default defineConfig(({ command, mode }) => {
   const isProd = mode === 'production';
+  const env = loadEnv(mode, process.cwd(), '');
+  const allowedHosts = (env.MATHPAD_ALLOWED_HOSTS || '')
+    .split(',')
+    .map((host) => host.trim())
+    .filter(Boolean);
 
   return {
     plugins: [
@@ -112,12 +117,16 @@ export default defineConfig(({ command, mode }) => {
       emptyOutDir: true, // Replaces rollup-plugin-delete
     },
     server: {
+      host: true,
       port: 8788,
       strictPort: true,
+      allowedHosts,
     },
     preview: {
+      host: true,
       port: 8788,
       strictPort: true,
+      allowedHosts,
     }
   };
 });

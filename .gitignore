@@ -24,6 +24,7 @@ public/pyodideWorker.js
 public/jediWorker.js
 
 wrangler.toml
+.env.local
 
 public/serviceworker.js
 public/serviceworker.js.map
