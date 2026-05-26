@@ -145,6 +145,10 @@
             <td>Binary</td>
             <td>bits (b), bytes (B)</td>
         </tr>
+        <tr>
+            <td>Pure scalar</td>
+            <td>tera, giga, mega, kilo, milli, micro, nano, femto</td>
+        </tr>
     </tbody>
 </table>
 
@@ -379,4 +383,3 @@
         </tr>
     </tbody>
 </table>
-

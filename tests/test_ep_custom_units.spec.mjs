@@ -65,6 +65,30 @@ test('Test water viscosity from temperature and pressure', async () => {
   await page.locator('#add-math-cell').click();
   await page.setLatex(16, String.raw`1\left\lbrack gf\right\rbrack=\left\lbrack kgf\right\rbrack`);
 
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(17, String.raw`1\left\lbrack tera\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(18, String.raw`1\left\lbrack giga\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(19, String.raw`1\left\lbrack mega\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(20, String.raw`1\left\lbrack kilo\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(21, String.raw`1\left\lbrack milli\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(22, String.raw`1\left\lbrack micro\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(23, String.raw`1\left\lbrack nano\right\rbrack=`);
+
+  await page.locator('#add-math-cell').click();
+  await page.setLatex(24, String.raw`1\left\lbrack femto\right\rbrack=`);
+
   await page.waitForSelector('text=Updating...', {state: 'detached'});
 
   let content = await page.textContent('#result-value-0');
@@ -124,4 +148,28 @@ test('Test water viscosity from temperature and pressure', async () => {
 
   content = await page.textContent('#result-value-16');
   expect(parseLatexFloat(content)).toBeCloseTo(1e-3, precision);
+
+  content = await page.textContent('#result-value-17');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e12, precision);
+
+  content = await page.textContent('#result-value-18');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e9, precision);
+
+  content = await page.textContent('#result-value-19');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e6, precision);
+
+  content = await page.textContent('#result-value-20');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e3, precision);
+
+  content = await page.textContent('#result-value-21');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e-3, precision);
+
+  content = await page.textContent('#result-value-22');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e-6, precision);
+
+  content = await page.textContent('#result-value-23');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e-9, precision);
+
+  content = await page.textContent('#result-value-24');
+  expect(parseLatexFloat(content)).toBeCloseTo(1e-15, precision);
 });

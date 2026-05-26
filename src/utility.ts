@@ -13,6 +13,31 @@ export function createCustomUnits() {
   }
 
   createUnit({
+    // dimensionless scalar units
+    tera: {
+      definition: '1e12'
+    },
+    giga: {
+      definition: '1e9'
+    },
+    mega: {
+      definition: '1e6'
+    },
+    kilo: {
+      definition: '1e3'
+    },
+    milli: {
+      definition: '1e-3'
+    },
+    micro: {
+      definition: '1e-6'
+    },
+    nano: {
+      definition: '1e-9'
+    },
+    femto: {
+      definition: '1e-15'
+    },
     // absolute or dynamic viscosity
     poise: {
       prefixes: 'long',
