@@ -17,7 +17,7 @@
 
 
 <p>
-    The following unit definintions are supported by EngineeringPaper.xyz (from <a
+    The following unit definintions are supported by MathPad (from <a
         href="https://mathjs.org/docs/datatypes/units.html#reference">Math.js</a
     >
     documentation). Units may be used in their long or short forms (meter or m) and

@@ -5,7 +5,7 @@
 <p><em>Updated {versionDateString}</em></p>
 <br />
 <p>
-  Welcome to EngineeringPaper.xyz! By using this software, you are agreeing to
+  Welcome to MathPad! By using this software, you are agreeing to
   the following terms and conditions.
 </p>
 
@@ -14,16 +14,16 @@
 <h4>Introduction</h4>
 
 <p>
-  EngineeringPaper.xyz strives to protect user privacy. This is free and open
+  MathPad strives to protect user privacy. This is free and open
   source software that does not require you to create an account to use. All of
-  the calculations you perform on EngineeringPaper.xyz are performed on your own
+  the calculations you perform on MathPad are performed on your own
   computer and nothing you enter into your sheets is sent to our servers unless
   you create a shareable link or export your sheet as a Microsoft Word .docx file
   or a PDF file. When you create a shareable link, we only store the minimum amount of information 
   required to run the shareable link service (see details below). When you export 
-  your sheet as a .docx or a .pdf file, no information is retained on the EngineeringPaper.xyz 
+  your sheet as a .docx or a .pdf file, no information is retained on the MathPad
   servers (see details below). Using your browser's print functionality to save your sheet
-  as a PDF file sends no data to the EngineeringPaper.xyz servers.
+  as a PDF file sends no data to the MathPad servers.
 </p>
 <br />
 <p>
@@ -44,7 +44,7 @@
 <br />
 <h4>Privacy</h4>
 <p>
-  EngineeringPaper.xyz does not use cookies and does not track its users. The
+  MathPad does not use cookies and does not track its users. The
   only time personal information is collected is when you use the "Get Shareable
   Link" feature of this site. When creating a shareable link, your IP address is
   stored in a database along with the contents of the sheet that is uploaded.
@@ -55,15 +55,15 @@
 </p>
 <br />
 <p>
-  For technical reasons, it is necessary to send data to the EngineeringPaper.xyz 
+  For technical reasons, it is necessary to send data to the MathPad
   servers to convert your sheets to .docx or .pdf files. No data is retained 
-  on the EngineeringPaper.xyz servers when creating .docx or .pdf files. 
+  on the MathPad servers when creating .docx or .pdf files. 
 </p>
 <br />
 <p>
   Saving your sheets locally as .epxyz or Markdown files avoids sending any of your data to our database. 
   Additionally, sheets can be convert to a PDF file using the browser's print functionality
-  without sending any data to the EngineeringPaper.xyz servers.
+  without sending any data to the MathPad servers.
 </p>
 <br />
 <h4>No Data Retention Guarantee for Shareable Links</h4>

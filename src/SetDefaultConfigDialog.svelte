@@ -74,7 +74,7 @@
     below can be used to either save this sheet's config as the user default config or apply the user default 
     config to this sheet.
   {:else}
-    <Information color="blue"/> The current sheet is using the EngineeringPaper.xyz default config which 
+    <Information color="blue"/> The current sheet is using the MathPad default config which 
     is different than the user default config. The user default config can be applied to this sheet using 
     the second button below.
   {/if}

@@ -22,7 +22,7 @@
 </script>
 
 <p>
-  EngineeringPaper.xyz uses your browser's local storage to store your default sheet config, 
+  MathPad uses your browser's local storage to store your default sheet config, 
   your {numCheckpoints ?? ""} most recent autosave
   checkpoints, and your list of recently visited sheets. Your web browser will not automatically persist this
   local storage and may clear it at any time. Safari is particularly aggressive about freeing this storage

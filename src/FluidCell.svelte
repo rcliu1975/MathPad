@@ -581,7 +581,7 @@
       <div class="info">
         <TooltipIcon direction="left">
           <span class="tooltip" slot="tooltipText">
-            The fluid models in EngineeringPaper.xyz are powered by the CoolProp library. For 
+            The fluid models in MathPad are powered by the CoolProp library. For 
             more information on these models, see the 
             <a href="http://coolprop.org/" target="_blank">CoolProp documentation</a>.
           </span>

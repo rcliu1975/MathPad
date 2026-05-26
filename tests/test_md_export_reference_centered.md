@@ -1,4 +1,4 @@
-<!-- Created with EngineeringPaper.xyz -->
+<!-- Created with MathPad -->
 # MD Export Test
 $$ x=20\left\lbrack m\right\rbrack   $$
 
@@ -37,4 +37,3 @@ $$ \text{System} = \begin{cases} 1\cdot s+2\cdot t=10 &  \\ 2\cdot s-4\cdot t^2=
 $$ \text{Solution} = \begin{cases} s & = \quad 12 \\ t & = \quad -1 \end{cases} $$ 
 
 $$ \text{Roller Thrust Bearing} \quad \mu_{c} = 0.01 $$ 
-
