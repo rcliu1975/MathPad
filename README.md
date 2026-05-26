@@ -1,82 +1,152 @@
-EngineeringPaper.xyz is a web app for engineering calculations that handles unit conversion/checking automatically and also supports plotting, solving systems of equations, and documenting your calculations (see the [official blog](https://blog.engineeringpaper.xyz) for many examples). It's easy to share your calculations by creating a [shareable link](https://engineeringpaper.xyz/oMbWLXMZ6ChQ3g3ZxRbJQD) that anyone can open and build off of. Additionaly, you can save and open your files locally if you prefer not to save to the cloud. EngineeringPaper.xyz runs on Mac, Windows, Linux, and ChromeOS and works on all of the major browsers. Additionally, EngineeringPaper.xyz is designed to run well on Android and iOS devices. [Launch EngineeringPaper.xyz](https://EngineeringPaper.xyz) in your browser to try it out.
+# MathPad
 
-This repository is a fork of [mgreminger/EngineeringPaper.xyz](https://github.com/mgreminger/EngineeringPaper.xyz).
+MathPad 是從 [engineeringpaper.xyz](https://engineeringpaper.xyz) / [mgreminger/EngineeringPaper.xyz](https://github.com/mgreminger/EngineeringPaper.xyz) fork 出來的專案，延續其以瀏覽器為核心的工程計算與數學筆記能力。
 
-![platforms_cropped](https://user-images.githubusercontent.com/6439649/212774749-caab6190-7a45-4f04-a31c-ffdb6b6e4b96.png)
+如果你要了解實際使用方式、功能介紹、教學文件或範例，請直接參考 EngineeringPaper.xyz 的官方資源：
 
+- 產品網站: [engineeringpaper.xyz](https://engineeringpaper.xyz)
+- 內建教學: [editable tutorial](https://engineeringpaper.xyz/CUsUSuwHkHzNyButyCHEng)
+- 教學影片: [tutorial video](https://youtu.be/r7EZQVhcr5Q)
+- 延伸說明: [learning EngineeringPaper.xyz](https://blog.engineeringpaper.xyz/engineeringpaperxyz-tutorial)
 
-All calculations are run on your own device using the [Pyodide project](https://pyodide.org) to run Python in your browser. The 
-[SymPy](https://www.sympy.org) Python symbolic math library is used to handle all calculations. 
+本 README 主要整理 `MathPad` 的開發、維護、執行與同步上游版本所需資訊。
 
-<a href="https://apps.microsoft.com/store/detail/engineeringpaperxyz/9N1W74WC2X2M">
-<img href="" src="https://user-images.githubusercontent.com/6439649/219978105-56789e93-a1d5-4ccb-b35b-6dff71a8a954.png" width="216" height="78" alt="Microsoft Store Link for EngineeringPaper.xyz App"/></a>
+## 專案概要
 
-[![join_reddit_banner](https://github.com/mgreminger/EngineeringPaper.xyz/assets/6439649/311af86c-b358-47d4-9995-329e7e973d2e)](https://www.reddit.com/r/EngineeringPaperXYZ/)
+- 前端技術: Svelte 5 + Vite 7
+- 計算核心: Pyodide、SymPy
+- 本機預覽與測試環境: Wrangler Pages
+- 端對端測試: Playwright
 
-## Learning to Use EngineeringPaper.yxz
-There are many ways to learn EngineeringPaper.xyz. The built-in [editable tutorial](https://engineeringpaper.xyz/CUsUSuwHkHzNyButyCHEng) or this [tutorial video](https://youtu.be/r7EZQVhcr5Q) are good places to start. For other resources, including many video tutorials and example sheets, see the 
-[learning EngineeringPaper.xyz](https://blog.engineeringpaper.xyz/engineeringpaperxyz-tutorial) blog post. To get your
-questions answered, or to share calculations you have created using EngineeringPaper.xyz, join the official 
-[EngineeringPaper.xyz subreddit](https://www.reddit.com/r/EngineeringPaperXYZ/).
+## 開發需求
 
-## Dependencies
-EngineeringPaper.xyz would not be possible without the many powerful open source projects that it depends on. Here's a partial list of the projects that EngineeringPaper.xyz builds off of:
-* [Pyodide](https://pyodide.org), puts all of the power of Python in your browser using WebAssembly
-* [SymPy](https://www.sympy.org), Python symbolic math library (this is the core computation engine for EngineeringPaper.xyz)
-* [CoolProp](http://www.coolprop.org/), for thermodynamic fluid properties
-* [MathLive](https://cortexjs.io/mathlive/), math editor component
-* [Plotly](https://plotly.com/), used for plotting
-* [Quill Editor](https://quilljs.com/), rich text editor used for documentation cells
-* [Svelte](https://svelte.dev/), the javascript front-end framework that EngineeringPaper.xyz is based on
-* [Math.js](https://mathjs.org/), used for unit parsing
-* [ANTLR](https://www.antlr.org/), parser generator used to parse the math cells
+- Node.js 20 以上
+- npm
+- 建議使用 Unix-like shell、macOS、Linux 或 WSL2
 
-## Build Instructions
-These instructions are only needed to create a development environment for EngineeringPaper.xyz. To run the app, simply go to [EngineeringPaper.xyz](https://engineeringpaper.xyz). See the [contributing guide](https://github.com/mgreminger/EngineeringPaper.xyz/blob/main/CONTRIBUTING.md#contributing) for information on making contributions to EngineeringPaper.xyz.
+## 安裝與本機開發
 
-[Node.js](https://nodejs.org) is used for EngineeringPaper.xyz development. If you don't already have node installed, the easiest way to get it installed is to use the [Volta](https://volta.sh/) node installer. Node version 20 or newer is required.
+先安裝依賴：
 
-First, [fork and clone](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository. Then, in the cloned project folder, use the following commands to start a local dev server (commands tested on Linux, MacOS, and on Windows using WSL2):
-``` bash
-# Install dependencies
+```bash
 npm install
+```
 
-# Run local dev server with live reload (point browser to localhost:8788)
+啟動開發模式：
+
+```bash
 npm run dev
 ```
-Because MathPad is maintained as a fork, keep the original repository configured as `upstream` so future updates from `mgreminger/EngineeringPaper.xyz` are easy to review and merge. A typical remote setup looks like this:
-``` bash
+
+這個指令會先編譯 browser workers，再啟動 Vite dev server，預設使用 `127.0.0.1:8788`。
+
+如果你透過反向代理、自訂網域或外部 host 存取 dev server，請建立 `.env.local`，並設定允許的 host：
+
+```dotenv
+MATHPAD_ALLOWED_HOSTS=your-dev-host.example.com
+```
+
+可參考 [`.env.example`](/home/roger/WorkSpace/MathPad/.env.example:1)。
+
+## 建置與預覽
+
+正式建置：
+
+```bash
+npm run build
+```
+
+本機預覽：
+
+```bash
+npm run preview
+```
+
+`preview` 會用 `wrangler pages dev dist --kv SHEETS --local` 啟動本機 Pages 環境，方便驗證接近部署環境的行為。
+
+## 測試
+
+首次使用 Playwright 時，先安裝瀏覽器：
+
+```bash
+npx playwright install
+```
+
+建立本機測試資料：
+
+```bash
+npm run test:seed
+```
+
+執行測試：
+
+```bash
+npm run test
+```
+
+## 常用指令
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run test:seed
+npm run test
+```
+
+## 主要腳本說明
+
+- `npm run dev`: 先編譯 workers，再啟動 Vite 開發伺服器
+- `npm run build`: 建置前端輸出與 database worker
+- `npm run build:workers`: 編譯 `src/pyodideWorker.ts`、`src/parser/parserWorker.ts`、`src/jediWorker.ts`
+- `npm run preview`: 以 Wrangler Pages 在本機模擬部署環境
+- `npm run test:seed`: 匯入測試用 KV 資料
+- `npm run test`: 執行 Playwright 測試
+
+## 維護這個 Fork
+
+建議保留 `origin` 與 `upstream` 兩個 remote：
+
+```bash
 origin   git@github.com:rcliu1975/MathPad
 upstream https://github.com/mgreminger/EngineeringPaper.xyz
 ```
-You can check whether your local branch is ahead of or behind upstream with:
-``` bash
+
+如果還沒設定 `upstream`，可執行：
+
+```bash
+git remote add upstream https://github.com/mgreminger/EngineeringPaper.xyz
+```
+
+檢查目前分支與上游的差異：
+
+```bash
 git fetch upstream
 git rev-list --left-right --count HEAD...upstream/main
 git log --oneline upstream/main..HEAD
 git log --oneline HEAD..upstream/main
 ```
-For `git rev-list --left-right --count`, an output such as `3 0` means your local `HEAD` is 3 commits ahead of `upstream/main` and 0 commits behind it.
 
-If you access the dev server through a reverse proxy or custom hostname, create a `.env.local` file from `.env.example` and set `MATHPAD_ALLOWED_HOSTS` to a comma-separated list of allowed hostnames before starting Vite.
+`git rev-list --left-right --count HEAD...upstream/main` 的輸出例如 `3 0`，表示本地分支比 `upstream/main` 多 3 個 commit，且沒有落後上游。
 
-To build the production version of the site and run the test suite, run the following commands (if the dev server is still running after running the above commands, close it using Ctrl-C before running these commands).
-Note that after running `npm run build`, the contents of the `public` folder 
-can be hosted as a static site on a web server.
-``` bash
-# Build the production version of the site
-npm run build
+## 同步上游更新的建議流程
 
-# run local server
-npm run preview
+1. 先確認工作區乾淨，或至少知道哪些本地變更尚未提交。
+2. 抓取上游最新內容：`git fetch upstream`
+3. 檢查上游新增了哪些提交：`git log --oneline HEAD..upstream/main`
+4. 視情況用 `merge` 或 `rebase` 將 `upstream/main` 整合進來
+5. 重新執行 `npm install`、`npm run build`、必要時再跑 `npm run test`
 
-# Install playwright browsers (only needs to be done once each time browsers need to be updated)
-# Additional installation of dependencies may be required, follow instructions
-npx playwright install
+## 依賴與上游背景
 
-# Setup local database needed for test suite
-npm run test:seed
+MathPad 繼承了 EngineeringPaper.xyz 的主要能力與依賴組合，包含：
 
-# Run test suite
-npm run test
-```
+- [Pyodide](https://pyodide.org)
+- [SymPy](https://www.sympy.org)
+- [MathLive](https://cortexjs.io/mathlive/)
+- [Plotly](https://plotly.com/)
+- [Quill](https://quilljs.com/)
+- [Math.js](https://mathjs.org/)
+- [ANTLR](https://www.antlr.org/)
+
+如果你要了解原始產品設計、功能取向或對外使用情境，請回到上游專案與官方網站文件。
