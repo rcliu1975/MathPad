@@ -19,7 +19,7 @@
   import Information from "carbon-icons-svelte/lib/Information.svelte";
   import SettingsAdjust from "carbon-icons-svelte/lib/SettingsAdjust.svelte";
   import LogoPython from "carbon-icons-svelte/lib/LogoPython.svelte";
-  import { applyEdits, createSubQuery, type Replacement } from "./parser/utility";
+  import { applyEdits, createSubQuery, getBlankStatement, type Replacement } from "./parser/utility";
   import CodeCell from "./cells/CodeCell.svelte";
 
   interface Props {
@@ -99,6 +99,17 @@
 
   export function setNumberConfig(mathCellConfig: MathCellConfig) {
     mathCell.config = mathCellConfig;
+    if (mathCellConfig?.disableCalculation) {
+      mathCell.mathField.parsingError = false;
+      mathCell.mathField.parsingErrorMessage = "";
+      mathCell.mathField.parsePending = false;
+      mathCell.mathField.statement = getBlankStatement();
+    } else {
+      void mathCell.mathField.parseLatex(mathCell.mathField.latex).then(() => {
+        appState.cells[index] = appState.cells[index];
+        mathCellChanged();
+      });
+    }
   }
 
   function getNumberConfig() {
@@ -128,7 +139,15 @@
   async function parseLatex(latex: string, index: number) {
     triggerSaveNeeded(true);
 
-    await mathCell.mathField.parseLatex(latex);
+    if (numberConfig.disableCalculation) {
+      mathCell.mathField.latex = latex;
+      mathCell.mathField.parsingError = false;
+      mathCell.mathField.parsingErrorMessage = "";
+      mathCell.mathField.parsePending = false;
+      mathCell.mathField.statement = getBlankStatement();
+    } else {
+      await mathCell.mathField.parseLatex(latex);
+    }
     appState.cells[index] = appState.cells[index];
 
     mathCellChanged();

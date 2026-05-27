@@ -828,7 +828,9 @@
 
     for (const [cellNum, cell] of appState.cells.entries()) {
       if (cell instanceof MathCell) {
-        if (cell.mathField.statement.type === "assignmentList") {
+        if (cell.config?.disableCalculation ?? appState.config.mathCellConfig.disableCalculation) {
+          statements.push(getBlankStatement());
+        } else if (cell.mathField.statement.type === "assignmentList") {
           statements.push(cell.mathField.statement.assignments[0]);
           endStatements.push(...cell.mathField.statement.assignments.slice(1));
         } else if (cell.mathField.statement.type === "query"){
@@ -939,6 +941,9 @@
 
   function parsingErrorReducer(accum: boolean, cell: Cell) {
     if (cell instanceof MathCell) {
+      if (cell.config?.disableCalculation ?? appState.config.mathCellConfig.disableCalculation) {
+        return accum;
+      }
       return accum || cell.mathField.parsingError;
     } else if (cell instanceof PlotCell) {
       return accum || cell.mathFields.some(field => field.parsingError);

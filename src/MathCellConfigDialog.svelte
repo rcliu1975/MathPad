@@ -126,7 +126,14 @@
 </style>
 
 <Checkbox
+  bind:checked={currentMathCellConfig.disableCalculation}
+  labelText="Disable Calculation and Treat as Display-Only Math"
+  on:change={() => update(null, true)}
+/>
+
+<Checkbox
   bind:checked={currentMathCellConfig.symbolicOutput}
+  disabled={currentMathCellConfig.disableCalculation}
   labelText="Display Symbolic Results"
   on:change={update}
 />
@@ -134,6 +141,7 @@
 <div class="container">
   <Checkbox
     bind:checked={currentMathCellConfig.showIntermediateResults}
+    disabled={currentMathCellConfig.disableCalculation}
     labelText="Show Intermediate Results"
     on:change={() => update(null, true)}
   />
@@ -188,6 +196,6 @@
     bind:this={numberFormatOptionsDialogElement}
     bind:numberFormatOptions={currentMathCellConfig.formatOptions}
     onchange={() => update()}
-    symbolicOutput={currentMathCellConfig.symbolicOutput}
+    symbolicOutput={currentMathCellConfig.symbolicOutput || currentMathCellConfig.disableCalculation}
   />
 </div>

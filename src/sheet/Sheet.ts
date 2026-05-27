@@ -35,6 +35,7 @@ export type Config = {
 type Notation = "auto" | "fixed" | "exponential" | "engineering";
 
 export type MathCellConfig = {
+  disableCalculation?: boolean; // early configs may not have this property
   symbolicOutput: boolean;
   showIntermediateResults?: boolean; // early configs may not have this property
   textColor?: string; // early configs may not have this property
@@ -76,6 +77,7 @@ export function getDefaultFluidConfig(): FluidConfig {
 
 function getDefaultMathCellConfig(): MathCellConfig {
   return {
+    disableCalculation: false,
     symbolicOutput: false,
     showIntermediateResults: false,
     textColor: "#333333",
@@ -113,6 +115,7 @@ export function isDefaultNumberFormatOptions(options: NumberFormatOptions): bool
 export function mathConfigsEqual(config1: MathCellConfig, config2: MathCellConfig): boolean {
   return (
     config1.symbolicOutput === config2.symbolicOutput &&
+    config1.disableCalculation === config2.disableCalculation &&
     config1.showIntermediateResults === config2.showIntermediateResults &&
     config1.textColor === config2.textColor &&
     config1.useBackgroundColor === config2.useBackgroundColor &&
@@ -147,6 +150,7 @@ export function copyMathConfig(input: MathCellConfig): MathCellConfig {
   }
 
   return {
+    disableCalculation: input.disableCalculation ?? defaultConfig.mathCellConfig.disableCalculation,
     symbolicOutput: input.symbolicOutput,
     showIntermediateResults: input.showIntermediateResults,
     textColor: input.textColor ?? defaultConfig.mathCellConfig.textColor,
@@ -159,6 +163,7 @@ export function copyMathConfig(input: MathCellConfig): MathCellConfig {
 export function getSafeMathConfig(config: MathCellConfig): MathCellConfig {
   const safeConfig = copyMathConfig(config);
 
+  safeConfig.disableCalculation = safeConfig.disableCalculation ?? defaultConfig.mathCellConfig.disableCalculation;
   safeConfig.textColor = safeConfig.textColor ?? defaultConfig.mathCellConfig.textColor;
   safeConfig.useBackgroundColor = safeConfig.useBackgroundColor ?? defaultConfig.mathCellConfig.useBackgroundColor;
   safeConfig.backgroundColor = safeConfig.backgroundColor ?? defaultConfig.mathCellConfig.backgroundColor;
@@ -372,6 +377,7 @@ export function normalizeConfig(config: Config | undefined): Config {
   config.simplifySymbolicExpressions = config.simplifySymbolicExpressions ?? true; // simplifySymboicExpressions may not exist
   config.convertFloatsToFractions = config.convertFloatsToFractions ?? true; // convertFloatsToFractions may not exist
   config.fluidConfig = config.fluidConfig ?? getDefaultFluidConfig(); // fluidConfig may not exist
+  config.mathCellConfig.disableCalculation = config.mathCellConfig.disableCalculation ?? defaultConfig.mathCellConfig.disableCalculation;
   config.mathCellConfig.showIntermediateResults = config.mathCellConfig.showIntermediateResults ?? false; // may not exist
   config.mathCellConfig.textColor = config.mathCellConfig.textColor ?? defaultConfig.mathCellConfig.textColor;
   config.mathCellConfig.useBackgroundColor = config.mathCellConfig.useBackgroundColor ?? defaultConfig.mathCellConfig.useBackgroundColor;
