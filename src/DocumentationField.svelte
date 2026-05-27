@@ -1,8 +1,57 @@
-<script module lang="ts">
+<script lang="ts">
   import Quill from "quill";
   import Embed from "quill/blots/embed";
   import ImageResize from "@mgreminger/quill-image-resize-module";
   import { MathfieldElement } from "mathlive";
+  import type { Delta, Range } from "quill";
+  import { onMount } from "svelte";
+  import appState from "./stores.svelte";
+
+  const BaseImage = Quill.import("formats/image");
+  const QuillDelta = Quill.import("delta");
+  const IMAGE_FILE_TYPES = [
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml"
+  ];
+  const IMAGE_FILE_ACCEPT = `${IMAGE_FILE_TYPES.join(",")},.svg`;
+  const IMAGE_URL_PATTERN = /\.(jpe?g|gif|png|svg|webp)(?:[?#].*)?$/i;
+  const DATA_IMAGE_PATTERN = /^data:image\/(?:gif|png|jpe?g|svg\+xml|webp)(?:;[^,]*)?,/i;
+
+  function isSupportedImageUrl(url: string) {
+    return IMAGE_URL_PATTERN.test(url) || DATA_IMAGE_PATTERN.test(url);
+  }
+
+  function svgToDataUrl(svgMarkup: string) {
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
+  }
+
+  function getImageAttributes(node: Element) {
+    const attributes: Record<string, string> = {};
+
+    for (const name of ["width", "height", "alt"]) {
+      const value = node.getAttribute(name);
+      if (value) {
+        attributes[name] = value;
+      }
+    }
+
+    return attributes;
+  }
+
+  function matchSvgElement(node: Element) {
+    const image = svgToDataUrl(node.outerHTML);
+    const attributes = getImageAttributes(node);
+    return new QuillDelta().insert({ image }, attributes);
+  }
+
+  class SvgFriendlyImage extends BaseImage {
+    static match(url: string) {
+      return isSupportedImageUrl(url);
+    }
+  }
 
   class Formula extends Embed {
     static blotName = 'formula';
@@ -35,16 +84,10 @@
   }
 
   Quill.register({
+    'formats/image': SvgFriendlyImage,
     'formats/formula': Formula,
     'modules/imageResize': ImageResize
   }, true);
-
-</script>
-
-<script lang="ts">
-  import type { Delta, Range } from "quill";
-  import { onMount } from "svelte";
-  import appState from "./stores.svelte";
 
   interface Props {
     hideToolbar: boolean;
@@ -63,6 +106,34 @@
   }: Props = $props();
   
   let editorDiv;
+
+  function selectImageFile(onSelect: (dataUrl: string) => void) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = IMAGE_FILE_ACCEPT;
+
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      const isImage = file.type.startsWith("image/") || file.name.toLowerCase().endsWith(".svg");
+      if (!isImage) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          onSelect(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  }
 
   export function setContents(newContents) {
     quill.setContents(newContents);
@@ -114,9 +185,28 @@
           [{list: 'ordered'}, {list: 'bullet'}],
           ['link', 'image', 'formula'],
           ['clean']
-        ], 
+        ],
+        handlers: {
+          image: function() {
+            const toolbar = this;
+            selectImageFile((dataUrl) => {
+              const range = toolbar.quill.getSelection(true);
+              const index = range ? range.index : toolbar.quill.getLength();
+              toolbar.quill.insertEmbed(index, "image", dataUrl, Quill.sources.USER);
+              toolbar.quill.setSelection(index + 1, 0, Quill.sources.SILENT);
+            });
+          }
+        },
         keyboard: {
           bindings: bindings
+        },
+        clipboard: {
+          matchers: [
+            ['svg', matchSvgElement]
+          ]
+        },
+        uploader: {
+          mimetypes: IMAGE_FILE_TYPES
         },
         imageResize: {
           altTextContainerStyles: {
@@ -195,9 +285,11 @@
   }
 
   @media screen {
-    :global(.ql-toolbar.ql-snow + .ql-container) {
-      border: 1px solid #ddd;
+    :global(div.quill-wrapper .ql-container.ql-snow) {
+      border: 1px solid #ddd !important;
+      border-top: 1px solid #ddd !important;
       border-radius: 2px;
+      background: white;
     }
   }
 

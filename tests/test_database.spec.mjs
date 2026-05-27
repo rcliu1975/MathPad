@@ -196,7 +196,7 @@ test('Test database consistency', async ({ page, browserName }) => {
 
 test('Test presistance of equations and image resize in documentation fields', async ({ page, browserName }) => {
   page.once('filechooser', async (fileChooser) => {
-    await fileChooser.setFiles('./tests/images/image_smaller.jpg');
+    await fileChooser.setFiles('./tests/images/image_smaller.svg');
   });
 
   page.setLatex = async function (cellIndex, latex) {
