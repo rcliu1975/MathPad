@@ -141,6 +141,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: visible;
   }
 
   div.editor {
@@ -162,7 +164,15 @@
   }
 
   :global(div.quill-wrapper div.ql-toolbar) {
-    transition: 0.3s;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 20;
+    width: calc(100% - 2px);
+    background: white;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+    transform: translateY(calc(-100% - 6px));
+    transition: opacity 0.2s, transform 0.2s;
     transition-delay: .1s;
     max-height: 99px;
     overflow: visible;
@@ -179,30 +189,21 @@
   }
 
   div.hideToolbar :global(.ql-toolbar) {
-    max-height: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    overflow: clip;
     opacity: 0;
+    pointer-events: none;
+    transform: translateY(calc(-100% - 2px));
   }
 
   @media screen {
-    .hideToolbar :global(.ql-toolbar.ql-snow + .ql-container) {
-      border-top-width: 1px;
-      border-top-style: solid;
-      border-top-color: gray;
+    :global(.ql-toolbar.ql-snow + .ql-container) {
+      border: 1px solid #ddd;
       border-radius: 2px;
     }
   }
 
-  :global(.ql-toolbar.ql-snow + .ql-container) {
-    border: 1px solid gray;
-    border-radius: 0px 0px 2px 2px;
-  }
-
   :global(.ql-toolbar.ql-snow) {
-    border: 1px solid gray !important;
-    border-radius: 2px 2px 0px 0px;
+    border: 1px solid #ddd !important;
+    border-radius: 2px;
   }
 
   :global(div.quill-wrapper .ql-container:focus-within) {
