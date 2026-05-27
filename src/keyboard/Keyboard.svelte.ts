@@ -106,6 +106,33 @@ const unitsKeyboards: Keyboards = {
   type: "Keyboards",
   keyboards: [
     {
+      tabText: "Scalar",
+      content: {
+        type: "Buttons",
+        buttons: [[
+          new Button({ buttonText: String.raw`\left\lbrack tera\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack giga\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack mega\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack kilo\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack milli\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack micro\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack nano\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: String.raw`\left\lbrack pico\right\rbrack `, command: "insert" }),
+        ],
+        [
+          new Button({ buttonText: String.raw`\left\lbrack femto\right\rbrack `, command: "insert" }),
+          new Blank(),
+          new Blank(),
+          new Blank(),
+          new Blank(),
+          new Blank(),
+          new Blank(),
+          new Blank(),
+        ],
+        ]
+      }
+    },
+    {
       tabText: "Length",
       content: {
         type: "Buttons",
@@ -127,44 +154,6 @@ const unitsKeyboards: Keyboards = {
           new Blank(),
           new Blank(),
           new Blank(),
-        ],
-        ]
-      }
-    },
-    {
-      tabText: "Force",
-      content: {
-        type: "Buttons",
-        buttons: [[
-          new Button({ buttonText: String.raw`\left\lbrack N\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kN\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack mN\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack lbf\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kip\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack dyne\right\rbrack `, command: "insert" }),
-        ],
-        [
-          new Button({ buttonText: String.raw`\left\lbrack gf\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kgf\right\rbrack `, command: "insert" }),
-          new Blank(),
-          new Blank(),
-          new Blank(),
-          new Blank(),
-        ]
-        ]
-      }
-    },
-    {
-      tabText: "Mass",
-      content: {
-        type: "Buttons",
-        buttons: [[
-          new Button({ buttonText: String.raw`\left\lbrack g\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kg\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack tonne\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack lbm\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack ton\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack oz\right\rbrack `, command: "insert" }),
         ],
         ]
       }
@@ -204,31 +193,6 @@ const unitsKeyboards: Keyboards = {
           new Blank(),
           new Blank(),
           new Blank(),
-        ],
-        ]
-      }
-    },
-    {
-      tabText: "Press",
-      content: {
-        type: "Buttons",
-        buttons: [[
-          new Button({ buttonText: String.raw`\left\lbrack Pa\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kPa\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack MPa\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack psi\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack kpsi\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack atm\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack bar\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack torr\right\rbrack `, command: "insert" }),
-        ],
-        [
-          new Button({ buttonText: String.raw`\left\lbrack mmHg\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack mmH2O\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack cmH2O\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack inHg\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack inH2O\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack ftH2O\right\rbrack `, command: "insert" }),
         ],
         ]
       }
@@ -427,29 +391,6 @@ const unitsKeyboards: Keyboards = {
           new Button({ buttonText: String.raw`\left\lbrack Wb\right\rbrack `, command: "insert"}),
           new Button({ buttonText: String.raw`\left\lbrack T\right\rbrack `, command: "insert"}),
         ],
-        ]
-      }
-    },
-    {
-      tabText: "Visc",
-      content: {
-        type: "Buttons",
-        buttons: [[
-          new Button({ buttonText: String.raw`\left\lbrack P\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack cP\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack Pa\cdot s\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack reyn\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack ureyn\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack St\right\rbrack `, command: "insert" }),
-        ],
-        [
-          new Button({ buttonText: String.raw`\left\lbrack cSt\right\rbrack `, command: "insert" }),
-          new Button({ buttonText: String.raw`\left\lbrack\frac{m^2}{s}\right\rbrack `, command: "insert" }),
-          new Blank(),
-          new Blank(),
-          new Blank(),
-          new Blank(),
-        ]
         ]
       }
     },

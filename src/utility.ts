@@ -35,6 +35,9 @@ export function createCustomUnits() {
     nano: {
       definition: '1e-9'
     },
+    pico: {
+      definition: '1e-12'
+    },
     femto: {
       definition: '1e-15'
     },
