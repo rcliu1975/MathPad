@@ -678,7 +678,7 @@
     </span>
   {/if}
 
-  {#if mathCell.mathField.statement?.type === "query" && !renderResult}
+  {#if !renderResult}
     <span class="extra-buttons">
       
       {#if numericResult && mathCell.mathField.statement?.isCodeFunctionQuery && !error}
