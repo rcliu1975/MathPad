@@ -103,49 +103,6 @@
             }
           ];
 
-  const exampleSheets = [
-    {
-      path: `/${tutorialHash}`,
-      title: "Introduction to EngineeringPaper"
-    },
-    {
-      path: "/g4MZrw8GUPdHBSUTzGbQjb",
-      title: "Plotting and Functions" 
-    },
-    {
-      path: "/32XmqQA442GL8mj8X9uwP3",
-      title: "Scatter Plots" 
-    },
-    {
-      path: "/dcM95gSLeCTcbCHtsM4uqq",
-      title: "Parametric Plots" 
-    },
-    {
-      path: "/DeP4bqfF2H5VbRJz3Nd9Re",
-      title: "Equation Solving" 
-    },
-    {
-      path: "/D3xRT3N6mXMUWE2vBsR4eZ",
-      title: "Matrices and Vectors" 
-    },
-    {
-      path: "/hnh9wDMhEfXjDPUzpn9cTS",
-      title: "Data Tables" 
-    },
-    {
-      path: "/gMeN6aWXbCfFenJF8UmGL5",
-      title: "Python Extensions" 
-    },
-    {
-      path: "/enYmu2PzN2hN93Avizx9ec",
-      title: "Python Code Generation" 
-    },
-    {
-      path: "/mWf3zkzQEmYsUPckCPX5P8",
-      title: "Thermodynamic Properties of Fluids" 
-    },
-  ];
-
   const prebuiltTables = [
     {
       url: "https://engineeringpaper.xyz/PaFvsBhgoJdZEEwyBLPnD6",
@@ -2638,17 +2595,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
       on:close={() => window.dispatchEvent(new Event('resize'))}
     >
       <SideNavItems>
-        <SideNavMenu text="Example Sheets">
-          {#each exampleSheets as {path, title} (path)}
-            <SideNavMenuItem 
-              href={path}
-              rel="nofollow"
-              on:click={(e) => handleLinkPushState(e, path)}
-            >
-              <div title={title} class="side-nav-title">{title}</div>
-            </SideNavMenuItem>
-          {/each}
-        </SideNavMenu>
         <SideNavMenu text="Prebuilt Tables">
           {#each prebuiltTables as {url, title} (url)}
             <SideNavMenuItem 
