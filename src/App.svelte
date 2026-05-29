@@ -328,7 +328,7 @@
             modalInfo = {
               modalOpen: true,
               state: "newVersion",
-              heading: "Releases"
+              heading: "MathPad Modifications"
           }
         }
       }
@@ -2648,9 +2648,9 @@ Please include a link to this sheet in the email to assist in debugging the prob
           on:click={() => modalInfo = {
             modalOpen: true,
             state: "newVersion",
-            heading: "Releases"
+            heading: "MathPad Modifications"
           }}
-          text="Releases"
+          text="MathPad Modifications"
         />
         <SideNavLink 
           on:click={() => showRequestPersistentStorage()}
