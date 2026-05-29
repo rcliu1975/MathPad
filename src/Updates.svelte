@@ -27,7 +27,7 @@
 </style>
 
 <em>April 14, 2026 (Permalink: <a href="https://20260414.engineeringpaper.xyz" target="_blank">20260414.engineeringpaper.xyz</a>)</em>
-<h4>Pyodide Update</h4>
+<h4>MathPad Major Change: Pyodide Update</h4>
 <p>
    The underlying Python runtime that EngineeringPaper.xyz depends on, Pyodide, has been updated.
    The main change is the inclusion of the latest version of the CoolProp library for fluid
@@ -385,7 +385,7 @@
    For this, and all future releases, a permalink will be listed after the release date in this dialog 
    (for this release, the permalink is: 
    <a href="https://20250116.engineeringpaper.xyz" target="_blank">20250116.engineeringpaper.xyz</a>).
-   This dialog can be accessed by clicking on the "MathPad Modifications" entry in the left menu. The release permalinks will also 
+   This dialog can be accessed by clicking on the "Releases" entry in the left menu. The release permalinks will also 
    be available on the 
    <a href="https://github.com/mgreminger/EngineeringPaper.xyz/releases" target="_blank">EngineeringPaper.xyz GitHub site</a>.
 </p>
