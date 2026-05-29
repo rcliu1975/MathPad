@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MathPad">
+  <title>MathPad</title>
+  <rect width="512" height="512" rx="128" fill="#e61f00"/>
+  <rect x="84" y="72" width="344" height="368" rx="48" fill="#ffffff"/>
+  <rect x="84" y="72" width="344" height="72" rx="48" fill="#fff6f1"/>
+  <rect x="84" y="108" width="344" height="8" fill="#e61f00" opacity="0.25"/>
+  <g fill="#ffffff" opacity="0.9">
+    <circle cx="170" cy="108" r="8"/>
+    <circle cx="256" cy="108" r="8"/>
+    <circle cx="342" cy="108" r="8"/>
+  </g>
+  <g stroke="#ebe3dc" stroke-width="7" stroke-linecap="round">
+    <path d="M 124 188 H 388"/>
+    <path d="M 124 244 H 388"/>
+    <path d="M 124 300 H 388"/>
+    <path d="M 124 356 H 388"/>
+  </g>
+  <path d="M 164 366 V 206 L 222 286 L 256 240 L 290 286 L 348 206 V 366" fill="none" stroke="#222222" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <g stroke="#e61f00" stroke-width="18" stroke-linecap="round">
+    <path d="M 334 226 H 366"/>
+    <path d="M 350 210 V 242"/>
+  </g>
+</svg>

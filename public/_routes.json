@@ -19,7 +19,10 @@
     "/robots.txt",
     "/favicon.svg",
     "/favicon.ico",
+    "/favicon-v2.svg",
+    "/favicon-v2.ico",
     "/logo_with_background.png",
-    "/manifest.json"
+    "/manifest.json",
+    "/manifest-v2.json"
   ]
 }
