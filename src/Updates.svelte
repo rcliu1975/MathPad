@@ -29,7 +29,8 @@
 <em>April 14, 2026 (Permalink: <a href="https://20260414.engineeringpaper.xyz" target="_blank">20260414.engineeringpaper.xyz</a>)</em>
 <h4>MathPad Major Change: Pyodide Update</h4>
 <p>
-   The underlying Python runtime that EngineeringPaper.xyz depends on, Pyodide, has been updated.
+   Before April 14, 2026, this project was EngineeringPaper.xyz. Starting with this release, it is
+   MathPad, and the underlying Python runtime has been updated.
    The main change is the inclusion of the latest version of the CoolProp library for fluid
    properties (v7.2.0), which adds the R1336mzz(E) refrigerant and includes numerous bug fixes.
    <strong>Potentially Breaking Change:</strong> For sheets that use code cells, there is a possibility
@@ -41,7 +42,7 @@
    version that will work with your code cells 
    (re-open the sheet to see this message if it has been closed). Note that the Polars library 
    is no longer available in this new Pyodide version, so code cells that use the Polars library will
-   need to use the previous permalink version of EngineeringPaper.xyz.
+   need to use the previous permalink version.
 </p>
 <br>
 
