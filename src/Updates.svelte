@@ -27,10 +27,10 @@
 </style>
 
 <em>April 14, 2026 (Permalink: <a href="https://20260414.engineeringpaper.xyz" target="_blank">20260414.engineeringpaper.xyz</a>)</em>
-<h4>MathPad Major Change: Pyodide Update</h4>
+<h4>MathPad Launch and Pyodide Update</h4>
 <p>
-   Before April 14, 2026, this project was EngineeringPaper.xyz. Starting with this release, it is
-   MathPad, and the underlying Python runtime has been updated.
+   April 14, 2026 marks the transition from EngineeringPaper.xyz to MathPad. This release
+   introduces the MathPad name and updates the underlying Python runtime.
    The main change is the inclusion of the latest version of the CoolProp library for fluid
    properties (v7.2.0), which adds the R1336mzz(E) refrigerant and includes numerous bug fixes.
    <strong>Potentially Breaking Change:</strong> For sheets that use code cells, there is a possibility
