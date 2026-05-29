@@ -45,7 +45,7 @@
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#e61f00",
-  "description": "MathPad is a web app for engineering math, unit conversion, equations, and plots.",
+  "description": "MathPad is an engineering notebook for fast calculations, unit conversion, equations, and plots.",
   "shortcuts" : [
     {
       "name": "New Sheet",
