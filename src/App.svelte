@@ -2644,14 +2644,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
             {/each}
           </SideNavMenu>
         {/if}
-        <SideNavLink
-          on:click={() => modalInfo = {
-              modalOpen: true,
-              state: "bugReport",
-              heading: "Bug Report"
-          }}
-          text="Bug Report"
-        />
         <SideNavLink 
           on:click={() => modalInfo = {
             modalOpen: true,
@@ -2900,7 +2892,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         hasScrollingContent={["supportedUnits",
                               "newVersion", "keyboardShortcuts",
                               "generateCode", "pyodideRuntimeWarning"].includes(modalInfo.state)}
-        preventCloseOnClickOutside={!["supportedUnits", "bugReport", "newVersion", "updateAvailable", 
+        preventCloseOnClickOutside={!["supportedUnits", "newVersion", "updateAvailable", 
                                       "keyboardShortcuts"].includes(modalInfo.state)}
       >
         {#if modalInfo.state === "uploadSheet"}
@@ -2929,12 +2921,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
           <InlineLoading description={`Saving sheet to file`}/>
         {:else if modalInfo.state === "restoring"}
           <InlineLoading description={`Restoring autosave checkpoint: ${window.location}`}/>
-        {:else if modalInfo.state === "bugReport"}
-          <p>If you have discovered a bug in MathPad, 
-            please send a bug report to 
-            <a href={`mailto:support@engineeringpaper.xyz?subject=Bug Report&body=Sheet with issues: ${encodeURIComponent(window.location.href)}`}>support@engineeringpaper.xyz</a>.
-            Please include a description of the problem. Additionally, it's best if you can include a link to the sheet that is experiencing the problem.
-          </p>
         {:else if modalInfo.state === "supportedUnits"}
           <UnitsDocumentation />
         {:else if modalInfo.state === "keyboardShortcuts"}

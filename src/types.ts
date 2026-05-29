@@ -11,7 +11,7 @@ import type { RuntimeInfo } from "./utility";
 
 export type ModalInfo = {
   state: "uploadSheet" | "uploadPending" | "success" | "error" | "requestPersistentStorage" |
-         "retrieving" | "restoring" | "bugReport" | "supportedUnits" | 
+         "retrieving" | "restoring" | "supportedUnits" | 
          "opening" | "saving" | "newVersion" | "insertSheet" |
          "keyboardShortcuts" | "updateAvailable" | "sheetSettings" | "generateCode" |
          "customMatrix" | "generatingDocument" | "downloadDocument" | "importingSpreadsheet" |
