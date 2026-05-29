@@ -103,44 +103,7 @@
             }
           ];
 
-  const prebuiltTables = [
-    {
-      url: "https://engineeringpaper.xyz/PaFvsBhgoJdZEEwyBLPnD6",
-      title: "Mechanical Properties of Metals" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/QF5ThTJMUhn2sLBxM4Vyr9",
-      title: "Coefficients of Friction" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/FwahHU9W8ht28t9p4LNqFd",
-      title: "Coefficients of Thermal Expansion" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/iBxxaDryEV8NkdrNdsZzvF",
-      title: "Electrical Properties of Conductors" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/EyXiBtFajaDHpxqRpvGQFX",
-      title: "Dielectric Properties" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/EnZhHT9wvsESXvRChZ7TLV",
-      title: "Properties of Liquids" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/djW5XrzFThKvTgk9XTtxwT",
-      title: "Beam Section Properties" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/XvB4X3qGDZoupFyRCLbWmL",
-      title: "W-Beam Properties" 
-    },
-    {
-      url: "https://engineeringpaper.xyz/ndyjJRwvqoJBfVLw7BGFfu",
-      title: "Musical Note Frequencies" 
-    }
-  ];
+  const prebuiltTables = [];
 
   // Provide global function for setting latex for MathField
   // this is used for testing
@@ -2595,17 +2558,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
       on:close={() => window.dispatchEvent(new Event('resize'))}
     >
       <SideNavItems>
-        <SideNavMenu text="Prebuilt Tables">
-          {#each prebuiltTables as {url, title} (url)}
-            <SideNavMenuItem 
-              href={`/${getSheetHash(new URL(url))}`}
-              rel="nofollow"
-              on:click={(e) => handleLinkPushState(e, `/${getSheetHash(new URL(url))}`)}
-            >
-              <div title={title} class="side-nav-title">{title}</div>
-            </SideNavMenuItem>
-          {/each}
-        </SideNavMenu>
         {#if appState.history.length > 0}
           <SideNavMenu text="Sheet History">
             {#each appState.history as {url, hash, creation} (hash+creation)}
@@ -2733,11 +2685,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
         <SideNavLink
           href="https://www.youtube.com/@epxyz"
           text="YouTube Channel"
-          target="_blank"
-        />
-        <SideNavLink
-          href="https://www.reddit.com/r/EngineeringPaperXYZ/"
-          text="Reddit Community"
           target="_blank"
         />
       </SideNavItems>
