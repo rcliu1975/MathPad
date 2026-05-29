@@ -2664,29 +2664,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
           on:click={() => showRequestPersistentStorage()}
           text="Enable Persistent Local Storage"
         />
-        <SideNavLink
-          on:click={() => modalInfo = {
-              modalOpen: true,
-              state: "tryEpxyz",
-              heading: "Need the upstream site?"
-          }}
-          text=".xyz blocked? Try EPxyz.com"
-        />
-        <SideNavLink
-          href="https://blog.engineeringpaper.xyz"
-          text="Blog"
-          target="_blank"
-        />
-        <SideNavLink
-          href="https://github.com/mgreminger/EngineeringPaper.xyz"
-          text="GitHub Page"
-          target="_blank"
-        />
-        <SideNavLink
-          href="https://www.youtube.com/@epxyz"
-          text="YouTube Channel"
-          target="_blank"
-        />
       </SideNavItems>
     </SideNav>
   {/if}
@@ -2923,7 +2900,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         hasScrollingContent={["supportedUnits",
                               "newVersion", "keyboardShortcuts",
                               "generateCode", "pyodideRuntimeWarning"].includes(modalInfo.state)}
-        preventCloseOnClickOutside={!["supportedUnits", "bugReport", "tryEpxyz", "newVersion", "updateAvailable", 
+        preventCloseOnClickOutside={!["supportedUnits", "bugReport", "newVersion", "updateAvailable", 
                                       "keyboardShortcuts"].includes(modalInfo.state)}
       >
         {#if modalInfo.state === "uploadSheet"}
@@ -2957,20 +2934,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
             please send a bug report to 
             <a href={`mailto:support@engineeringpaper.xyz?subject=Bug Report&body=Sheet with issues: ${encodeURIComponent(window.location.href)}`}>support@engineeringpaper.xyz</a>.
             Please include a description of the problem. Additionally, it's best if you can include a link to the sheet that is experiencing the problem.
-          </p>
-        {:else if modalInfo.state === "tryEpxyz"}
-          <p>
-            Some environments indiscriminately block all <em>.xyz</em> domains. For example,
-            some school districts block all <em>.xyz</em> domains for their school issued 
-            Chromebooks. If you need access to the upstream EngineeringPaper.xyz service,
-            the same functionality is also available as a <em>.com</em> address at
-            <a href="EPxyz.com" target="_blank">EPxyz.com</a>. The functionality is the same
-            between the two domains and sheets saved on one can be opened on the other. 
-            Shareable links are interchangeable as well. For example, 
-            <a href="https://engineeringpaper.xyz/fFjTsnFoSQMLwcvteVoNtL" target="_blank">
-              https://engineeringpaper.xyz/fFjTsnFoSQMLwcvteVoNtL</a> and 
-            <a href="https://epxyz.com/fFjTsnFoSQMLwcvteVoNtL" target="_blank">
-              https://epxyz.com/fFjTsnFoSQMLwcvteVoNtL</a> point to the same sheet.
           </p>
         {:else if modalInfo.state === "supportedUnits"}
           <UnitsDocumentation />

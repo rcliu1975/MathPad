@@ -11,7 +11,7 @@ import type { RuntimeInfo } from "./utility";
 
 export type ModalInfo = {
   state: "uploadSheet" | "uploadPending" | "success" | "error" | "requestPersistentStorage" |
-         "retrieving" | "restoring" | "bugReport" | "tryEpxyz" | "supportedUnits" | 
+         "retrieving" | "restoring" | "bugReport" | "supportedUnits" | 
          "opening" | "saving" | "newVersion" | "insertSheet" |
          "keyboardShortcuts" | "updateAvailable" | "sheetSettings" | "generateCode" |
          "customMatrix" | "generatingDocument" | "downloadDocument" | "importingSpreadsheet" |
@@ -55,4 +55,3 @@ export type StatementsAndSystems = {
   simplifySymbolicExpressions: boolean;
   convertFloatsToFractions: boolean;
 }
-
