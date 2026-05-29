@@ -18,6 +18,7 @@
   h1 {
     font-size: 2rem;
     padding-left: 7px; /*only used for printing, screen padding defined below */
+    margin-bottom: 20px;
   }
 
   @media screen {

@@ -688,7 +688,9 @@
         <Error class="error"/>
       </TooltipIcon>
     {/if}
-  {:else if mathCell.mathField.statement && mathCell.mathField.statement.type === "blank"}
+  {:else if mathCell.mathField.statement &&
+            mathCell.mathField.statement.type === "blank" &&
+            !numberConfig.disableCalculation}
     <span class="info">
       <TooltipIcon direction="right">
         <span slot="tooltipText">This field must contain an assignment (e.g., x=y*z) or a query (e.g., x=). To delete an unwanted math cell, click the trash can on the right.</span>

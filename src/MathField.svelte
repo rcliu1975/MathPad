@@ -237,6 +237,14 @@
         keyboardShortcut: 'meta+C',
       },
       {
+        label: 'Copy All',
+        onMenuSelect: () => {
+          mf.executeCommand('selectAll');
+          mf.executeCommand('copyToClipboard');
+        },
+        visible: editable,
+      },
+      {
         label: navigator.clipboard.readText ? 'Paste' : 'Paste with Keyboard',
         id: 'paste',
         onMenuSelect: () => mf.executeCommand('pasteFromClipboard'),
@@ -378,5 +386,4 @@
   class:hidden
 >
 </math-field>
-
 

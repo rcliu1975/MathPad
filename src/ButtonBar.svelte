@@ -63,7 +63,7 @@
     padding: 4px;
   }
 
-  div.outer-container {
+  div.insert-bar {
     display: flex;
     gap: 4px;
     align-items: center;
@@ -71,22 +71,22 @@
     margin: -4px 0;
   }
 
-  div.outer-container:not(.last) {
+  div.insert-bar:not(.last) {
     opacity: 0;
     transform: scaleY(0.6);
     transform-origin: center;
-    max-height: 6px;
+    max-height: 8px;
     overflow: hidden;
     transition: opacity 0.2s, transform 0.2s, max-height 0.2s;
   }
 
-  div.outer-container:not(.last):hover {
+  div.insert-bar:not(.last):hover {
     opacity: 1;
     transform: scaleY(1);
     max-height: 18px;
   }
 
-  div.outer-container:focus-within {
+  div.insert-bar:focus-within {
     opacity: 1;
     transform: scaleY(1);
     max-height: 18px;
@@ -100,24 +100,24 @@
     background: lightgray;
   }
 
-  :global(div.outer-container button) {
+  :global(div.insert-bar button) {
     width: 16px;
     height: 16px;
     min-width: 16px;
     min-height: 16px;
   }
 
-  :global(div.outer-container div.icon) {
+  :global(div.insert-bar div.icon) {
     width: 12px;
     height: 12px;
   }
 
   div.mobile-spacer {
-    height: 20px;
+    height: 4px;
   }
 
   @media print {
-    div.outer-container {
+    div.insert-bar {
       visibility: hidden;
     }
   }
@@ -136,7 +136,7 @@
     </button>
   </div>
 {:else}
-  <div class="outer-container" class:last>
+  <div class="insert-bar" class:last>
     <hr>
     
     <IconButton
