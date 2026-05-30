@@ -67,4 +67,5 @@ test('Bookmark share updates the address bar when it succeeds', async ({ page })
 
   const bookmarkUrl = new URL(page.url());
   expect(bookmarkUrl.hash.startsWith('#bm1.')).toBeTruthy();
+  expect(bookmarkUrl.pathname).toBe('/');
 });

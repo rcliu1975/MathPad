@@ -35,7 +35,7 @@ export type RecentSheetUrl = {
   url: string;
   accessTime: Date;
   title: string;
-  checkpointHash?: string;
+  checkpointHash?: string | null;
 };
 
 export type RecentSheetFile = {
@@ -43,7 +43,7 @@ export type RecentSheetFile = {
   fileHandle: FileSystemFileHandle;
   accessTime: Date;
   title: string;
-  checkpointHash?: string;
+  checkpointHash?: string | null;
 }
 
 export type RecentSheets = Map<string, RecentSheetUrl | RecentSheetFile>;

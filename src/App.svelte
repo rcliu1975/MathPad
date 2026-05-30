@@ -1126,7 +1126,6 @@
     try {
       const bookmarkShare = await createBookmarkShareUrl(
         window.location.origin,
-        window.location.pathname,
         getSheetObject(),
         appState.history,
         appState.title
@@ -1957,6 +1956,49 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
   async function saveLocalCheckpoint() {
     if (appState.autosaveNeeded && !refreshingSheet && !inIframe) {
+      try {
+        const bookmarkShare = await createBookmarkShareUrl(
+          window.location.origin,
+          getSheetObject(),
+          appState.history,
+          appState.title
+        );
+
+        if (bookmarkShare.url.length <= bookmarkUrlSoftLimit) {
+          const bookmarkState = {
+            ...(window.history.state ?? currentStateObject ?? {})
+          } as Record<string, unknown>;
+          delete bookmarkState.checkpointHash;
+
+          currentState = bookmarkShare.url;
+          currentStateObject = Object.keys(bookmarkState).length ? bookmarkState as NavigationState : null;
+          window.history.replaceState(currentStateObject, "", currentState);
+          appState.autosaveNeeded = false;
+
+          const currentFileHandle = getFileHandleFromKey(window.history.state?.fileKey);
+          if (currentFileHandle) {
+            await updateRecentSheets({
+              url: "",
+              title: appState.title,
+              sheetId: appState.sheetId,
+              fileHandle: currentFileHandle,
+              checkpointHash: null
+            });
+          } else {
+            await updateRecentSheets({
+              url: currentState,
+              title: appState.title,
+              sheetId: appState.sheetId,
+              checkpointHash: null
+            });
+          }
+
+          return;
+        }
+      } catch(e) {
+        console.log(`Bookmark autosave failed, falling back to local checkpoint: ${e}`);
+      }
+
       const autosaveHash = `${checkpointPrefix}${crypto.randomUUID()}`;
       let saveFailed = false;
 
@@ -2063,7 +2105,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
 
   async function updateRecentSheets({url, title, sheetId, fileHandle, checkpointHash} : 
-      {url: string, title: string, sheetId: string, fileHandle?: FileSystemFileHandle, checkpointHash?: string}) {
+      {url: string, title: string, sheetId: string, fileHandle?: FileSystemFileHandle, checkpointHash?: string | null}) {
     if (!inIframe) {
 
       let newRecentSheet: RecentSheetUrl | RecentSheetFile;
@@ -2073,21 +2115,23 @@ Please include a link to this sheet in the email to assist in debugging the prob
       if (fileHandle) {
         newKey = fileHandle.name + title + sheetId;
         oldRecentSheet = recentSheets.get(newKey);
+        const resolvedCheckpointHash = checkpointHash !== undefined ? checkpointHash : oldRecentSheet?.checkpointHash;
         newRecentSheet = {
             fileName: fileHandle.name,
             fileHandle: fileHandle,
             accessTime: new Date(),
             title: title,
-            checkpointHash: checkpointHash ?? oldRecentSheet?.checkpointHash
+            checkpointHash: resolvedCheckpointHash
           };
       } else {
         newKey = title + sheetId;
         oldRecentSheet = recentSheets.get(newKey);
+        const resolvedCheckpointHash = checkpointHash !== undefined ? checkpointHash : oldRecentSheet?.checkpointHash;
         newRecentSheet = {
             url: url,
             accessTime: new Date(),
             title: title,
-            checkpointHash: checkpointHash ?? oldRecentSheet?.checkpointHash
+            checkpointHash: resolvedCheckpointHash
           };
       }
 

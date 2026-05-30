@@ -166,11 +166,11 @@ export async function createBookmarkShareFragment(sheet: Sheet, history: History
   return `${bookmarkVersion}.${encoded.encoding}.${encoded.payload}`;
 }
 
-export async function createBookmarkShareUrl(origin: string, pathname: string, sheet: Sheet, history: History, title: string): Promise<{ url: string; bookmarkTitle: string; fragmentLength: number; }> {
+export async function createBookmarkShareUrl(origin: string, sheet: Sheet, history: History, title: string): Promise<{ url: string; bookmarkTitle: string; fragmentLength: number; }> {
   const bookmarkTitle = formatBookmarkTitle(title);
   const fragment = await createBookmarkShareFragment(sheet, history, title);
   const url = new URL(origin);
-  url.pathname = pathname;
+  url.pathname = "/";
   url.hash = fragment;
 
   return {

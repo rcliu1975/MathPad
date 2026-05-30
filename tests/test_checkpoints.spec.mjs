@@ -21,9 +21,12 @@ test('Test autosave checkpoints', async ({ browserName }) => {
 
   await page.setLatex(0, '1=');
 
+  await expect.poll(async () => page.url(), {
+    timeout: 20000
+  }).toContain('#bm1.');
   await expect.poll(async () => page.evaluate(() => window.history.state?.checkpointHash), {
     timeout: 20000
-  }).not.toBeFalsy();
+  }).toBeFalsy();
   expect(page.url()).not.toContain('temp-checkpoint');
 
   // change the sheet after checkpoint creation so we can verify recovery
@@ -40,12 +43,14 @@ test('Test autosave checkpoints', async ({ browserName }) => {
       recentReq.onerror = () => reject(recentReq.error);
       recentReq.onsuccess = () => {
         const recentSheets = recentReq.result;
-        const entry = [...recentSheets.entries()].find(([, value]) => value.checkpointHash);
-        resolve(entry ? {title: entry[1].title, checkpointHash: entry[1].checkpointHash} : null);
+        const entry = [...recentSheets.entries()].find(([, value]) => typeof value.url === 'string' && value.url.includes('#bm1.'));
+        resolve(entry ? {title: entry[1].title, url: entry[1].url, checkpointHash: entry[1].checkpointHash ?? null} : null);
       };
     };
   }));
   expect(recentSheetInfo).not.toBeNull();
+  expect(recentSheetInfo.url).toContain('#bm1.');
+  expect(recentSheetInfo.checkpointHash).toBeNull();
 
   // recover from the latest autosave via Recent Sheets
   await page.locator('button.bx--header__menu-toggle').click();
@@ -53,13 +58,14 @@ test('Test autosave checkpoints', async ({ browserName }) => {
   const recentSheet = page.locator('div.side-nav-title').filter({ hasText: recentSheetInfo.title }).first();
   await expect(recentSheet).toBeVisible();
   await recentSheet.click();
-  await page.locator('h3 >> text=Retrieving Autosave Checkpoint').waitFor({state: 'detached', timeout: 5000});
+  await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: 5000 });
 
   expect(page.url()).not.toContain('temp-checkpoint');
+  expect(page.url()).toContain('#bm1.');
 
   const content = await page.locator('#result-value-0').textContent();
-  expect(parseLatexFloat(content)).toBeCloseTo(1, precision);
+  expect(parseLatexFloat(content)).toBeCloseTo(2, precision);
 
   await expect(page.getByRole('heading', { name: 'Checkpoint Recovery' })).toBeVisible();
 });
