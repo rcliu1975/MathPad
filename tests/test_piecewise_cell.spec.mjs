@@ -351,7 +351,7 @@ test('Test piecewise cell functionality', async ({ browserName }) => {
 
   // save to database and create a screenshot
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
 
@@ -367,7 +367,7 @@ test('Test piecewise cell functionality', async ({ browserName }) => {
   await page.locator('#new-sheet').click();
 
   // retrieve previously saved document from database and check screenshot
-  await page.goto(`${sheetUrl.pathname}`);
+  await page.goto(sheetUrl.href);
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
   await page.mouse.move(0,0);

@@ -179,7 +179,7 @@ export function getSheetObject(includeResults=true): Sheet {
 export function getSheetJson() {
   const sheet = getSheetObject();
 
-  return ' ' + JSON.stringify(sheet);
+  return JSON.stringify(sheet);
 }
 
 export async function resetSheet() {

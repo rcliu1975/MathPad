@@ -475,7 +475,7 @@ test('Test linear interpolation', async () => {
 
   // save sheet to database
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');
@@ -631,7 +631,7 @@ test('Test polyfit (quadratic and linear)', async () => {
 
   // save sheet to database
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');
@@ -2062,7 +2062,7 @@ test('Test column level number formatting', async () => {
 
   // save and reload document to ensure settings persist
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');

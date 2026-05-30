@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { promises as fs } from 'fs';
 
-import { precision, pyodideLoadTimeout, screenshotDir, compareImages, parseLatexFloat } from './utility.mjs';
+import { precision, pyodideLoadTimeout, screenshotDir, compareImages, parseLatexFloat, clickAcceptIfPresent } from './utility.mjs';
 
 
 test('Test local file save and open', async ({ page, browserName }) => {
@@ -21,7 +21,7 @@ test('Test local file save and open', async ({ page, browserName }) => {
   await page.setViewportSize({ width: width, height: height });
 
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 
   let content = await page.locator('#result-value-0').textContent();
@@ -108,7 +108,7 @@ test('Repeated open failure bug', async ({ page, browserName }) => {
   test.skip(browserName === "chromium", "Playwright does not currently support the File System Access API");
 
   await page.goto('/');
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_sheet.epxyz";
@@ -152,7 +152,7 @@ test('Test opening file with results and syntax error', async ({ page, browserNa
   test.skip(browserName === "chromium", "Playwright does not currently support the File System Access API");
 
   await page.goto('/');
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_sheet_parsing_error.epxyz";
@@ -177,7 +177,7 @@ test('Test opening file with incorrect results', async ({ page, browserName }) =
   test.skip(browserName === "chromium", "Playwright does not currently support the File System Access API");
 
   await page.goto('/');
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 
   // open the sheet that causes the error
@@ -226,7 +226,7 @@ test('Test clearing results on valid input after page initial load form file', a
 
   await page.goto('/');
 
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_sheet_with_results.epxyz";
@@ -270,7 +270,7 @@ test('Test file results displayed during recalc but not if sheet edited', async 
 
   await page.goto('/');
 
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_sheet_long_calculation.epxyz";
@@ -307,7 +307,7 @@ test('Test markdown export', async ({ page, browserName }) => {
   test.skip(browserName === "chromium", "Playwright does not currently support the File System Access API");
 
   await page.goto('/');
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_md_export.epxyz";
@@ -343,7 +343,7 @@ test('Test markdown export with centered equations', async ({ page, browserName 
   test.skip(browserName === "chromium", "Playwright does not currently support the File System Access API");
 
   await page.goto('/');
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   // open the sheet that causes the error
   const path = "tests/test_md_export.epxyz";
@@ -376,7 +376,7 @@ test('Test data table initial load detection bug', async ({ page, browserName })
   await page.goto('/HkHWST4HeBHY8wGx4YMwXh');
 
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 240000});
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
   
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: 240000 });
 
@@ -387,7 +387,6 @@ test('Test data table initial load detection bug', async ({ page, browserName })
 
   expect(page.url()).not.toContain('temp-checkpoint');
 });
-
 
 
 

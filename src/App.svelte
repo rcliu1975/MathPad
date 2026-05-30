@@ -24,6 +24,7 @@
   import type { Results } from "./resultTypes";
   import { getHash, API_GET_PATH, API_SAVE_PATH } from "./database/utility";
   import type { SheetPostBody, History } from "./database/types";
+  import { createBookmarkShareUrl, decodeBookmarkShareFragment, getBookmarkShareFragment, isBookmarkShareFragment, bookmarkUrlSoftLimit } from "./bookmarkShare";
   import CellList from "./CellList.svelte"; 
   import type { MathField } from "./cells/MathField.svelte";
   import DocumentTitle from "./DocumentTitle.svelte";
@@ -66,7 +67,6 @@
   import Document from "carbon-icons-svelte/lib/Document.svelte";
   import DocumentBlank from "carbon-icons-svelte/lib/DocumentBlank.svelte";
   import Ruler from "carbon-icons-svelte/lib/Ruler.svelte";
-  import Help from "carbon-icons-svelte/lib/Help.svelte";
   import Launch from "carbon-icons-svelte/lib/Launch.svelte";
   import Keyboard from "carbon-icons-svelte/lib/Keyboard.svelte";
   import ErrorFilled from "carbon-icons-svelte/lib/ErrorFilled.svelte";
@@ -93,7 +93,6 @@
 
   const apiUrl = window.location.origin;
 
-  const tutorialHash = "fPMFb3PZhRKpfJuBaJ2HDR";
 
   // need for File System Access API calls
   const fileTypes = [
@@ -165,7 +164,11 @@
   const maxRecentSheetsLength = 50;
 
   let currentState = $state("/"); // used when popstate is cancelled by user
-  let currentStateObject: null | {fileKey: string} = null;
+  type NavigationState = {
+    fileKey?: string;
+    checkpointHash?: string;
+  } | null;
+  let currentStateObject: NavigationState = null;
   let refreshingSheet = false; // since refreshSheet is async, need to make sure more than one call is not happening at once
   let populatingPage = false; // ditto for populatePage
 
@@ -609,6 +612,36 @@
     return hash;
   }
 
+  function getOpenSheetUrl(url: string): string {
+    const parsedUrl = new URL(url, window.location.origin);
+
+    if (isBookmarkShareFragment(parsedUrl.hash)) {
+      return parsedUrl.toString();
+    }
+
+    const sheetHash = getSheetHash(parsedUrl);
+    if (sheetHash !== "") {
+      if (sheetHash.startsWith(checkpointPrefix)) {
+        return "/";
+      }
+      return `/${sheetHash}`;
+    }
+
+    return url;
+  }
+
+  function getCurrentVisibleUrl() {
+    return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  }
+
+  function getBookmarkFragmentFromLocation(url: Location | URL): string | null {
+    if (isBookmarkShareFragment(url.hash)) {
+      return getBookmarkShareFragment(url.hash);
+    }
+
+    return null;
+  }
+
   async function handleSheetChange(event: PopStateEvent) {
     await refreshSheet();
   }
@@ -644,6 +677,31 @@
     if (!refreshingSheet) {
       refreshingSheet = true;
 
+      const historyState = window.history.state as NavigationState;
+      if (firstTime && historyState?.checkpointHash) {
+        currentState = getCurrentVisibleUrl();
+        currentStateObject = historyState;
+        await restoreCheckpoint(historyState.checkpointHash, historyState.checkpointHash);
+        window.history.replaceState(currentStateObject, "", currentState);
+        refreshingSheet = false;
+        return;
+      }
+
+      const bookmarkFragment = getBookmarkFragmentFromLocation(window.location);
+      if (bookmarkFragment) {
+        currentState = window.location.href;
+        currentStateObject = null;
+
+        if (!appState.unsavedChange || window.confirm("Continue loading sheet, any unsaved changes will be lost?")) {
+          await loadBookmarkFromFragment(bookmarkFragment);
+        } else {
+          window.history.replaceState(currentStateObject, "", currentState);
+        }
+
+        refreshingSheet = false;
+        return;
+      }
+
       const hash = getSheetHash(window.location);
 
       let searchParams: null | URLSearchParams = null;
@@ -678,8 +736,10 @@
             modalInfo.modalOpen = false; // launchQueue not supported by browser, close file open modal
           }
         } else if (hash.startsWith(checkpointPrefix)) {
-          currentStateObject = window.history.state;
-          await restoreCheckpoint(hash);
+          currentState = "/";
+          currentStateObject = window.history.state as NavigationState;
+          await restoreCheckpoint(hash, hash);
+          window.history.replaceState(currentStateObject, "", currentState);
         } else if(hash !== "") {
           currentStateObject = null;
           await loadSheetFromUrl(`${apiUrl}${API_GET_PATH}${hash}`);
@@ -987,7 +1047,7 @@
     refreshCounter++; // make all pending updates stale
   }
 
-  async function uploadSheet(resultModal = true): Promise<string> {
+  async function uploadSheetToDatabase(resultModal = true): Promise<string> {
     modalInfo.state = "uploadPending";
     const data = getSheetJson();
     const hash = await getHash(data);
@@ -998,7 +1058,7 @@
       const body: SheetPostBody = {
         title: appState.title, 
         history: appState.history,
-        document: data.slice(1)
+        document: data
       };
 
       response = await fetch(`${apiUrl}${API_SAVE_PATH}${hash}`, {
@@ -1047,6 +1107,70 @@
       return sheetUrl;
     } catch (error) {
       console.log("Error sharing sheet:", error);
+
+      if (resultModal) {
+        modalInfo = {
+          state: "error",
+          error: error,
+          modalOpen: true,
+          heading: modalInfo.heading};
+      }
+
+      return "";
+    }
+  }
+
+  async function getSharableLink(resultModal = true): Promise<string> {
+    modalInfo.state = "uploadPending";
+
+    try {
+      const bookmarkShare = await createBookmarkShareUrl(
+        window.location.origin,
+        window.location.pathname,
+        getSheetObject(),
+        appState.history,
+        appState.title
+      );
+
+      if (bookmarkShare.url.length > bookmarkUrlSoftLimit) {
+        if (resultModal) {
+          modalInfo = {
+            state: "bookmarkTooLarge",
+            modalOpen: true,
+            heading: "Bookmark Too Large",
+            url: bookmarkShare.url,
+            bookmarkTitle: bookmarkShare.bookmarkTitle
+          };
+          return "";
+        }
+
+        return await uploadSheetToDatabase(resultModal);
+      }
+
+      if (resultModal) {
+        modalInfo = {
+          state: "success",
+          url: bookmarkShare.url,
+          bookmarkTitle: bookmarkShare.bookmarkTitle,
+          modalOpen: true,
+          heading: modalInfo.heading
+        };
+      }
+
+      if (window.location.href !== bookmarkShare.url) {
+        currentState = bookmarkShare.url;
+        currentStateObject = null;
+        window.history.pushState(null, "", bookmarkShare.url);
+      }
+
+      appState.unsavedChange = false;
+      appState.autosaveNeeded = false;
+
+      await updateRecentSheets({ url: bookmarkShare.url, title: appState.title, sheetId: appState.sheetId });
+
+      return bookmarkShare.url;
+    } catch (error) {
+      console.log("Error sharing bookmark:", error);
 
       if (resultModal) {
         modalInfo = {
@@ -1139,6 +1263,69 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
     // on successfull sheet download, update recent sheets list
     await updateRecentSheets( { url: window.location.href, title: appState.title, sheetId: appState.sheetId } );
+  }
+
+  async function loadBookmarkFromFragment(fragment: string) {
+    modalInfo = {state: "retrieving", modalOpen: true, heading: "Retrieving Sheet"};
+
+    let bookmark;
+
+    try {
+      bookmark = await decodeBookmarkShareFragment(fragment);
+    } catch(error) {
+      modalInfo = {
+        state: "error",
+        error: `<p>Error retrieving bookmark sheet ${window.location.href}. The URL may be incorrect or
+the bookmark may have been corrupted. If problem persists, please report problem to
+<a href="mailto:support@engineeringpaper.xyz?subject=Error Retrieving Bookmark&body=Sheet that failed to load: ${encodeURIComponent(window.location.href)}">support@engineeringpaper.xyz</a>.  
+Please include a link to this sheet in the email to assist in debugging the problem. <br>${error} </p>`,
+        modalOpen: true,
+        heading: "Retrieving Sheet"
+      };
+      return;
+    }
+
+    const sheetData = {
+      sheet: bookmark.sheet,
+      requestHistory: bookmark.history
+    };
+
+    const renderError = await populatePage(sheetData.sheet, sheetData.requestHistory);
+
+    if (renderError) {
+      modalInfo = {
+        state: "error",
+        error: `<p>Error regenerating bookmark sheet ${window.location}.
+This is most likely due to a bug in MathPad.
+If problem persists after attempting to refresh the page, please report problem to
+<a href="mailto:support@engineeringpaper.xyz?subject=Error Regenerating Bookmark&body=Sheet that failed to load: ${encodeURIComponent(window.location.href)}">support@engineeringpaper.xyz</a>.  
+Please include a link to this sheet in the email to assist in debugging the problem. </p>`,
+        modalOpen: true,
+        heading: "Retrieving Sheet"
+      };
+      appState.cells = [];
+      appState.unsavedChange = false;
+      appState.autosaveNeeded = false;
+      return;
+    }
+
+    modalInfo.modalOpen = false;
+
+    appState.unsavedChange = false;
+    appState.autosaveNeeded = false;
+    appState.history = bookmark.history;
+
+    if (!inIframe && appState.cells.some(item => item instanceof CodeCell)) {
+      const runtimeInfo = checkPyodideRuntime(bookmark.sheet.version ?? 0);
+      if (runtimeInfo.oldRuntime) {
+        modalInfo.modalOpen = true;
+        modalInfo.state = "pyodideRuntimeWarning";
+        modalInfo.heading = "Python Runtime Update";
+        modalInfo.runtimeInfo = runtimeInfo;
+      }
+    }
+
+    await updateRecentSheets({ url: window.location.href, title: appState.title, sheetId: appState.sheetId });
   }
 
   async function populatePage(sheet: Sheet, requestHistory: History): Promise<boolean> {
@@ -1443,7 +1630,7 @@ with the file that is not opening attached, if possible. </p>`,
   }
 
 
-  async function restoreCheckpoint(hash: string) {
+  async function restoreCheckpoint(hash: string, checkpointHashForRecent = hash) {
     modalInfo = {state: "restoring", modalOpen: true, heading: "Retrieving Autosave Checkpoint"};
 
     let sheet: Sheet, requestHistory: History;
@@ -1500,6 +1687,16 @@ Please include a link to this sheet in the email to assist in debugging the prob
     modalInfo.modalOpen = false;
     appState.unsavedChange = false;
     appState.autosaveNeeded = false;
+
+    window.history.replaceState(currentStateObject, "", currentState);
+
+    await updateRecentSheets({
+      url: currentState,
+      title: appState.title,
+      sheetId: appState.sheetId,
+      checkpointHash: checkpointHashForRecent,
+      fileHandle: getFileHandleFromKey(window.history.state?.fileKey) ?? undefined
+    });
   }
 
 
@@ -1583,12 +1780,22 @@ Please include a link to this sheet in the email to assist in debugging the prob
     if(sheetUrl === "file" && fileReader) {
       sheetData = await parseFile(fileReader);
     } else {
-      let sheetHash: string;
-
       try {
-        sheetHash = getSheetHash(new URL(sheetUrl));
-        if (sheetHash === "") {
-          throw new Error(`${sheetUrl} is not a valid MathPad sheet URL.`);
+        const parsedUrl = new URL(sheetUrl);
+        if (isBookmarkShareFragment(parsedUrl.hash)) {
+          const bookmark = await decodeBookmarkShareFragment(parsedUrl.hash);
+          sheetData = {
+            sheet: bookmark.sheet,
+            requestHistory: bookmark.history
+          };
+        } else {
+          const sheetHash = getSheetHash(parsedUrl);
+          if (sheetHash === "") {
+            throw new Error(`${sheetUrl} is not a valid MathPad sheet URL.`);
+          }
+
+          const url = `${apiUrl}${API_GET_PATH}${sheetHash}`;
+          sheetData = await downloadSheet(url);
         }
       } catch(error) {
         modalInfo = {
@@ -1600,9 +1807,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
         return;
       }
       
-      const url = `${apiUrl}${API_GET_PATH}${sheetHash}`;
-
-      sheetData = await downloadSheet(url);
     }
 
     if (!sheetData) {
@@ -1771,9 +1975,11 @@ Please include a link to this sheet in the email to assist in debugging the prob
       // save the checkpoint
       try {
         await set(autosaveHash, $state.snapshot(checkpoint));
-        currentState = `/${autosaveHash}`
-        currentStateObject = window.history.state;
-        window.history.pushState(currentStateObject, "", currentState);
+        currentStateObject = {
+          ...(window.history.state ?? currentStateObject ?? {}),
+          checkpointHash: autosaveHash
+        };
+        window.history.replaceState(currentStateObject, "", currentState);
         appState.autosaveNeeded = false;
       } catch(e) {
         console.log(`Error saving local checkpoint: ${e}`);
@@ -1832,31 +2038,56 @@ Please include a link to this sheet in the email to assist in debugging the prob
           console.log(`Error updated numCheckpoints: ${e}`)
         }
       }
+
+      if (!saveFailed) {
+        const currentFileHandle = getFileHandleFromKey(window.history.state?.fileKey);
+        if (currentFileHandle) {
+          await updateRecentSheets({
+            url: "",
+            title: appState.title,
+            sheetId: appState.sheetId,
+            fileHandle: currentFileHandle,
+            checkpointHash: autosaveHash
+          });
+        } else {
+          await updateRecentSheets({
+            url: currentState,
+            title: appState.title,
+            sheetId: appState.sheetId,
+            checkpointHash: autosaveHash
+          });
+        }
+      }
     }
   }
 
 
-  async function updateRecentSheets({url, title, sheetId, fileHandle} : 
-      {url: string, title: string, sheetId: string, fileHandle?: FileSystemFileHandle}) {
+  async function updateRecentSheets({url, title, sheetId, fileHandle, checkpointHash} : 
+      {url: string, title: string, sheetId: string, fileHandle?: FileSystemFileHandle, checkpointHash?: string}) {
     if (!inIframe) {
 
       let newRecentSheet: RecentSheetUrl | RecentSheetFile;
       let newKey: string;
+      let oldRecentSheet: RecentSheetUrl | RecentSheetFile | undefined;
 
       if (fileHandle) {
         newKey = fileHandle.name + title + sheetId;
+        oldRecentSheet = recentSheets.get(newKey);
         newRecentSheet = {
             fileName: fileHandle.name,
             fileHandle: fileHandle,
             accessTime: new Date(),
-            title: title
+            title: title,
+            checkpointHash: checkpointHash ?? oldRecentSheet?.checkpointHash
           };
       } else {
         newKey = title + sheetId;
+        oldRecentSheet = recentSheets.get(newKey);
         newRecentSheet = {
             url: url,
             accessTime: new Date(),
-            title: title
+            title: title,
+            checkpointHash: checkpointHash ?? oldRecentSheet?.checkpointHash
           };
       }
 
@@ -1890,7 +2121,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
             heading: "Generating Document"
       };
 
-      const sheetUrl = await uploadSheet(false);
+      const sheetUrl = await uploadSheetToDatabase(false);
       if (sheetUrl) {
         markdown += `A live version of this calculation is available at [MathPad](${sheetUrl}).\n\n`;
       } else {
@@ -1966,11 +2197,38 @@ Please include a link to this sheet in the email to assist in debugging the prob
     try {
       const localRecentSheets = (await get('recentSheets') as RecentSheets);
       if (localRecentSheets) {
-        recentSheets = localRecentSheets;
+        const normalizedRecentSheets = new SvelteMap<string, RecentSheetUrl | RecentSheetFile>();
+        for (const [key, value] of localRecentSheets) {
+          if ("url" in value && value.url) {
+            const checkpointHash = value.checkpointHash ?? getCheckpointHashFromUrl(value.url);
+            if (checkpointHash) {
+              normalizedRecentSheets.set(key, {
+                ...value,
+                url: "/",
+                checkpointHash
+              });
+              continue;
+            }
+          }
+
+          normalizedRecentSheets.set(key, value);
+        }
+
+        recentSheets = normalizedRecentSheets;
       }
     } catch(e) {
       console.log(`Error retrieving recentSheets: ${e}`);
     }
+  }
+
+  function getCheckpointHashFromUrl(url: string) {
+    const parsedUrl = new URL(url, window.location.origin);
+    const sheetHash = getSheetHash(parsedUrl);
+    if (sheetHash.startsWith(checkpointPrefix)) {
+      return sheetHash;
+    }
+
+    return null;
   }
 
   async function toggleAlwaysHideKeyboard(activeMathField: MathField) {
@@ -2020,6 +2278,29 @@ Please include a link to this sheet in the email to assist in debugging the prob
     }
   }
 
+  async function handleRecentSheetClick(e: MouseEvent, key: string, value: RecentSheetUrl | RecentSheetFile) {
+    if (e.button !== 0) {
+      return;
+    }
+
+    if ("checkpointHash" in value && value.checkpointHash) {
+      e.preventDefault();
+      currentState = "url" in value && value.url ? getOpenSheetUrl(value.url) : "/";
+      currentStateObject = "fileHandle" in value
+        ? {fileKey: key, checkpointHash: value.checkpointHash}
+        : {checkpointHash: value.checkpointHash};
+      await restoreCheckpoint(value.checkpointHash, value.checkpointHash);
+      return;
+    }
+
+    if ("url" in value) {
+      handleLinkPushState(e, getOpenSheetUrl(value.url));
+    } else {
+      e.preventDefault();
+      await openSheetFromFileHandle(value.fileHandle);
+    }
+  }
+
   function handleUpdateAvailable() {
     modalInfo = {
       modalOpen: true,
@@ -2032,7 +2313,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
     modalInfo = {
       state: "uploadSheet",
       modalOpen: true,
-      heading: "Save as Shareable Link"
+      heading: "Get Sharable Link"
     };
   }
 
@@ -2509,13 +2790,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
           on:click={handleGetShareableLink} 
           icon={CloudUpload}
         />
-        <HeaderGlobalAction
-          href={`/${tutorialHash}`}
-          iconDescription="Tutorial"
-          rel="nofollow"
-          icon={Help}
-          on:click={(e) => handleLinkPushState(e, `/${tutorialHash}`) }
-        />
         <div class="dot-container">
           <HeaderGlobalAction 
             iconDescription={"Sheet Settings" + (usingDefaultConfig ? "" : " (Modified)")}
@@ -2596,9 +2870,9 @@ Please include a link to this sheet in the email to assist in debugging the prob
                 </SideNavMenuItem>
               {:else}
                 <SideNavMenuItem
-                  href={`/${getSheetHash(new URL(url))}`}
+                  href={getOpenSheetUrl(url)}
                   rel="nofollow"
-                  on:click={(e) => handleLinkPushState(e, `/${getSheetHash(new URL(url))}`)}
+                  on:click={(e) => handleLinkPushState(e, getOpenSheetUrl(url))}
                 >
                   <div title={title}>
                     <div class="side-nav-title">
@@ -2616,10 +2890,16 @@ Please include a link to this sheet in the email to assist in debugging the prob
             {#each [...recentSheets] as [key, value] (key)}
               {#if "url" in value}
                 <SideNavMenuItem
-                  isSelected={getSheetHash(new URL(value.url)) === currentState.slice(1)}
-                  href={`/${getSheetHash(new URL(value.url))}`}
+                  isSelected={
+                    ("checkpointHash" in value && value.checkpointHash)
+                      ? currentStateObject?.checkpointHash === value.checkpointHash
+                      : (isBookmarkShareFragment(new URL(value.url).hash)
+                          ? new URL(value.url).toString() === window.location.href
+                          : getSheetHash(new URL(value.url)) === currentState.slice(1))
+                  }
+                  href={getOpenSheetUrl(value.url)}
                   rel="nofollow"
-                  on:click={(e) => ("url" in value) ? handleLinkPushState(e, `/${getSheetHash(new URL(value.url))}`) : null}
+                  on:click={(e) => handleRecentSheetClick(e, key, value)}
                 >
                   <div title={value.title}>
                     <div class="side-nav-title">
@@ -2630,8 +2910,12 @@ Please include a link to this sheet in the email to assist in debugging the prob
                 </SideNavMenuItem>
               {:else}
                 <SideNavMenuItem
-                  isSelected={key === window.history.state?.fileKey}  
-                  on:click={async (e) => ("fileHandle" in value) ? openSheetFromFileHandle(value.fileHandle) : null}
+                  isSelected={
+                    ("checkpointHash" in value && value.checkpointHash)
+                      ? currentStateObject?.checkpointHash === value.checkpointHash && key === window.history.state?.fileKey
+                      : key === window.history.state?.fileKey
+                  }
+                  on:click={(e) => handleRecentSheetClick(e, key, value)}
                 >
                   <div title={value.fileName}>
                     <div class="side-nav-title">
@@ -2758,15 +3042,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       <ErrorFilled color="#da1e28"/>
       <div>
         Sheet cannot be evaluated due to a syntax error.
-        See this 
-        <a
-          href={`/${tutorialHash}`}
-          rel="nofollow"
-          onclick={(e) => handleLinkPushState(e, `/${tutorialHash}`)}
-        >
-          tutorial
-        </a>
-        to learn how to use this app.
+        Refer to the app documentation to learn how to use this app.
       </div>
       <button onclick={showSyntaxError}>Show Error</button>
     </div>
@@ -2880,15 +3156,26 @@ Please include a link to this sheet in the email to assist in debugging the prob
       />
     {:else}
       <Modal
-        passiveModal={!(modalInfo.state === "uploadSheet")}
+        passiveModal={!(["uploadSheet", "bookmarkTooLarge"].includes(modalInfo.state))}
         bind:open={modalInfo.modalOpen}
         modalHeading={modalInfo.heading}
-        primaryButtonText="Confirm"
+        primaryButtonText={modalInfo.state === "bookmarkTooLarge" ? "Use Original Share Link" :
+                           modalInfo.state === "uploadSheet" ? "Get Bookmark Link" :
+                           "OK"}
         secondaryButtonText="Cancel"
         on:click:button--secondary={() => (modalInfo.modalOpen = false)}
         on:open
         on:close
-        on:submit={() => uploadSheet()}
+        on:submit={async () => {
+          if (modalInfo.state === "bookmarkTooLarge") {
+            modalInfo.heading = "Shareable Link";
+            await uploadSheetToDatabase();
+          } else if (modalInfo.state === "uploadSheet") {
+            await getSharableLink();
+          } else {
+            modalInfo.modalOpen = false;
+          }
+        }}
         hasScrollingContent={["supportedUnits",
                               "newVersion", "keyboardShortcuts",
                               "generateCode", "pyodideRuntimeWarning"].includes(modalInfo.state)}
@@ -2896,16 +3183,19 @@ Please include a link to this sheet in the email to assist in debugging the prob
                                       "keyboardShortcuts"].includes(modalInfo.state)}
       >
         {#if modalInfo.state === "uploadSheet"}
-          <p>Saving this document will create a private shareable link that can be used to access this 
-            document in the future. Anyone you share this link with will be able to access the document.
+          <p>Creating a shareable link will first try to use a bookmark-only link. If the sheet is too
+            large for a bookmark-only link, you can switch to the original shareable link instead.
           </p>
         {:else if modalInfo.state === "uploadPending"}
-          <InlineLoading description="Getting shareable link..."/>
+          <InlineLoading description="Generating shareable link..."/>
+        {:else if modalInfo.state === "bookmarkTooLarge"}
+          <p>This sheet is too large for a bookmark-only link.</p>
+          <p>You can use the original shareable link instead.</p>
         {:else if modalInfo.state === "success"}
           <p>Save this link in order to be able to access or share this sheet.</p>
           <br>
           <div class="shareable-link">
-            <label for="shareable-link" class="shareable-link-label">Shareable Link:</label>
+            <label for="shareable-link" class="shareable-link-label">Link:</label>
             <input type="text" id="shareable-link" value={modalInfo.url} size=50 readonly>
             <CopyButton text={modalInfo.url} />
           </div>

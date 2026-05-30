@@ -13,84 +13,53 @@ test.beforeEach(async () => {await newSheet(page)});
 
 
 test('Test autosave checkpoints', async ({ browserName }) => {
-  while (!page.url().includes('temp-checkpoint')) {
-    await page.waitForTimeout(200);
-  }
+  await page.setViewportSize({ width: 1400, height: 1400 });
 
   // Change title
   await page.getByRole('heading', { name: 'New Sheet' }).click({ clickCount: 3 });
-  await page.type('text=New Sheet', 'New Title');
+  await page.type('text=New Sheet', 'Checkpoint Recovery');
 
   await page.setLatex(0, '1=');
 
-  let previousUrl = page.url();
+  await expect.poll(async () => page.evaluate(() => window.history.state?.checkpointHash), {
+    timeout: 20000
+  }).not.toBeFalsy();
+  expect(page.url()).not.toContain('temp-checkpoint');
 
-  // wait until checkpoint is saved
-  while (page.url() === previousUrl) {
-    await page.waitForTimeout(200);
-  }
-  previousUrl = page.url();
-
+  // change the sheet after checkpoint creation so we can verify recovery
   await page.setLatex(0, '2=');
 
+  const recentSheetInfo = await page.evaluate(() => new Promise((resolve, reject) => {
+    const req = indexedDB.open('keyval-store');
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => {
+      const db = req.result;
+      const tx = db.transaction('keyval', 'readonly');
+      const store = tx.objectStore('keyval');
+      const recentReq = store.get('recentSheets');
+      recentReq.onerror = () => reject(recentReq.error);
+      recentReq.onsuccess = () => {
+        const recentSheets = recentReq.result;
+        const entry = [...recentSheets.entries()].find(([, value]) => value.checkpointHash);
+        resolve(entry ? {title: entry[1].title, checkpointHash: entry[1].checkpointHash} : null);
+      };
+    };
+  }));
+  expect(recentSheetInfo).not.toBeNull();
 
-  // wait until checkpoint is saved
-  while (page.url() === previousUrl) {
-    await page.waitForTimeout(200);
-  }
-  previousUrl = page.url();
+  // recover from the latest autosave via Recent Sheets
+  await page.locator('button.bx--header__menu-toggle').click();
+  await page.getByRole('button', { name: 'Recent Sheets' }).click();
+  const recentSheet = page.locator('div.side-nav-title').filter({ hasText: recentSheetInfo.title }).first();
+  await expect(recentSheet).toBeVisible();
+  await recentSheet.click();
+  await page.locator('h3 >> text=Retrieving Autosave Checkpoint').waitFor({state: 'detached', timeout: 5000});
+  await page.waitForSelector('.status-footer', { state: 'detached', timeout: 5000 });
 
+  expect(page.url()).not.toContain('temp-checkpoint');
 
-  await page.click('#add-documentation-cell');
-  await page.type('div.editor div', `Checkpoint 3`);
-
-  // wait until checkpoint is saved
-  while (page.url() === previousUrl) {
-    await page.waitForTimeout(200);
-  }
-  previousUrl = page.url();
-
-
-  // will create a new sheet to clear contents
-  // will first dismiss creating new sheet and make sure everything stays the same
-  page.once('dialog', dialog => {
-    dialog.dismiss();
-  });
-  await page.locator('#new-sheet').click();
-  await page.locator('text=Checkpoint 3').waitFor();
-
-  // will create a new sheet to clear contents
-  // now accept new sheet and make sure everything is gone
-  page.once('dialog', dialog => {
-    dialog.accept();
-  });
-  await page.locator('#new-sheet').click();
-  await page.locator('text=Checkpoint 3').waitFor({state: 'detached'});
-
-  await page.waitForTimeout(500);
-  await page.goBack();
-  await page.locator('text=Checkpoint 3').waitFor();
-
-  await page.waitForTimeout(500);
-  await page.goBack(); // need to go back twice since cancelled new sheet adds additional page to history
-  await page.locator('text=Checkpoint 3').waitFor();
-
-  await page.waitForTimeout(500);
-  await page.goBack(); // now we'll hit checkpoint 2
-  await page.locator('text=Checkpoint 3').waitFor({state: 'detached'});
-  await page.waitForSelector('.status-footer', { state: 'detached' });
-  let content = await page.locator('#result-value-0').textContent();
-  expect(parseLatexFloat(content)).toBeCloseTo(2, precision);
-
-  await page.waitForTimeout(500);
-  await page.goBack();
-  await page.locator('text=New Title').waitFor();
-  await page.waitForSelector('.status-footer', { state: 'detached' });
-  content = await page.locator('#result-value-0').textContent();
+  const content = await page.locator('#result-value-0').textContent();
   expect(parseLatexFloat(content)).toBeCloseTo(1, precision);
 
-  await page.waitForTimeout(500);
-  await page.goBack();
-  await page.getByRole('heading', { name: 'New Sheet' }).waitFor();
-  
+  await expect(page.getByRole('heading', { name: 'Checkpoint Recovery' })).toBeVisible();
 });

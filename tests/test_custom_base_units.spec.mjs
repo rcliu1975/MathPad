@@ -60,7 +60,7 @@ test('Test custom base units for math cells', async () => {
 
   // save sheet to database
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');

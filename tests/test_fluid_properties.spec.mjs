@@ -350,7 +350,7 @@ test('Test custom function name', async () => {
   await page.getByRole('heading', { name: 'New Sheet' }).click({ clickCount: 3 });
   await page.type('text=New Sheet', 'Title for testing purposes only, will be deleted from database automatically');
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');
@@ -445,7 +445,7 @@ test('Test sheet level fluid selection', async () => {
   await page.getByRole('heading', { name: 'New Sheet' }).click({ clickCount: 3 });
   await page.type('text=New Sheet', 'Title for testing purposes only, will be deleted from database automatically');
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
   await page.click('[aria-label="Close the modal"]');

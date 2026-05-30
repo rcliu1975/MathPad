@@ -186,16 +186,10 @@ async function postSheet({ origin, requestHash, requestBody, requestIp, kv }:
       { status: 413 });
   }
 
-  const dataHash = await getHash(` ${data}`);
-
-  if (dataHash !== requestHash) {
-    return new Response("Document could not be saved.", { status: 404 });
-  }
-
   const dbEntry = {
     title: requestBody.title,
     data: data,
-    dataHash: dataHash,
+    dataHash: await getHash(data),
     creation: (new Date()).toISOString(),
     creationIp: requestIp,
     history: requestBody.history,

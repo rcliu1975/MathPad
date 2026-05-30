@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { cos } from 'mathjs';
 
 
-import { precision, pyodideLoadTimeout, screenshotDir, compareImages, parseLatexFloat } from './utility.mjs';
+import { precision, pyodideLoadTimeout, screenshotDir, compareImages, parseLatexFloat, clickAcceptIfPresent } from './utility.mjs';
 
 test('Test database', async ({ page, browserName }) => {
   page.once('filechooser', async (fileChooser) => {
@@ -22,7 +22,7 @@ test('Test database', async ({ page, browserName }) => {
   await page.setViewportSize({ width: width, height: height });
 
   // Create a new document to test saving capability
-  await page.locator("text=Accept").click();
+  await clickAcceptIfPresent(page);
 
   // Change title
   await page.getByRole('heading', { name: 'New Sheet' }).click({ clickCount: 3 });
@@ -49,22 +49,44 @@ test('Test database', async ({ page, browserName }) => {
   await page.press('div.editor div', 'Enter');
 
   await page.click('.ql-image'); // filechooser callback will handle selecting the image
+  await page.keyboard.press('Escape');
+  await page.locator('.ql-toolbar').waitFor({state: 'hidden', timeout: 5000}).catch(() => {});
 
   // Insert blank math cell between first and second cell.
   // Ensures that blank cells don't affect sheet solve and that 
   // they are saved an retrieved from the database corectly.
-  await page.locator('#add-math-cell-1').click();
+  await page.locator(':nth-match(math-field.editable, 1)').click();
+  await page.keyboard.press('Shift+Enter');
 
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 
   // check query result in cell 2
-  let content = await page.textContent('#result-value-2');
-  expect(parseLatexFloat(content)).toBeCloseTo(cos(3), precision);
+  let content = await page.locator('ul.sheet-body > li').nth(2).textContent();
+  const resultMatches = content.replaceAll('−', '-').match(/-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/gi);
+  expect(resultMatches && Number(resultMatches[resultMatches.length - 1])).toBeCloseTo(cos(3), precision);
 
-  await page.click('#upload-sheet');
-  await page.click('text=Confirm');
-  await page.waitForSelector('#shareable-link');
-  const sheetUrl1 = new URL(await page.$eval('#shareable-link', el => el.value));
+  async function openShareLinkModal() {
+    await page.click('#upload-sheet');
+    await expect(page.getByRole('heading', { name: 'Get Sharable Link' })).toBeVisible();
+    await page.getByRole('button', { name: 'Get Bookmark Link', exact: true }).click();
+
+    const shareableLink = page.locator('#shareable-link');
+    const useOriginalShareLink = page.getByRole('button', { name: 'Use Original Share Link', exact: true });
+
+    await Promise.race([
+      shareableLink.waitFor({ state: 'visible' }),
+      useOriginalShareLink.waitFor({ state: 'visible' })
+    ]);
+
+    if (await useOriginalShareLink.isVisible().catch(() => false)) {
+      await useOriginalShareLink.click();
+      await shareableLink.waitFor({ state: 'visible' });
+    }
+
+    return new URL(await page.$eval('#shareable-link', el => el.value));
+  }
+
+  const sheetUrl1 = await openShareLinkModal();
 
   await page.click('[aria-label="Close the modal"]');
   await page.keyboard.press('Escape');
@@ -74,13 +96,10 @@ test('Test database', async ({ page, browserName }) => {
   await page.screenshot({ path: `${screenshotDir}/${browserName}_screenshot1.png`, fullPage: true });
 
   // Try to save page again, should return the same link as before
-  await page.click('#upload-sheet');
-  await page.click('text=Confirm');
-  await page.waitForSelector('#shareable-link');
-  const sheetUrl1Verify = new URL(await page.$eval('#shareable-link', el => el.value));
+  const sheetUrl1Verify = await openShareLinkModal();
   await page.click('[aria-label="Close the modal"]');
 
-  expect(sheetUrl1.pathname).toBe(sheetUrl1Verify.pathname);
+  expect(sheetUrl1.href).toBe(sheetUrl1Verify.href);
 
   // create and save a second document that has plots
   await page.click('#new-sheet');
@@ -95,6 +114,7 @@ test('Test database', async ({ page, browserName }) => {
   await page.type(':nth-match(math-field.editable, 2)', 'sigma=-x');
   await page.click('#add-math-cell');
   await page.type(':nth-match(math-field.editable, 3)', 'y(-1<=x<=1)=');
+  await page.locator('#add-row-3').waitFor({ state: 'visible', timeout: pyodideLoadTimeout });
   await page.locator('#add-row-3').click();
   await page.type(':nth-match(math-field.editable, 4)', 'sigma(-1<x<1)=');
 
@@ -104,6 +124,7 @@ test('Test database', async ({ page, browserName }) => {
 
   await page.click('#add-math-cell');
   await page.setLatex(5, String.raw`y\left(-1\left[inch\right]\le x\le 1\left[inch\right]\right)=\left[inch\right]`);
+  await page.locator('#add-row-5').waitFor({ state: 'visible', timeout: pyodideLoadTimeout });
   await page.locator('#add-row-5').click();
   await page.locator('#plot-expression-5-1 math-field.editable').type('sigma(-1[inch]<=x<=1[inch])=[m]');
 
@@ -115,10 +136,7 @@ test('Test database', async ({ page, browserName }) => {
 
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 
-  await page.click('#upload-sheet');
-  await page.click('text=Confirm');
-  await page.waitForSelector('#shareable-link');
-  const sheetUrl2 = new URL(await page.$eval('#shareable-link', el => el.value));
+  const sheetUrl2 = await openShareLinkModal();
   await page.click('[aria-label="Close the modal"]');
   await page.evaluate(() => window.scrollTo(0, 0));
   
@@ -131,7 +149,7 @@ test('Test database', async ({ page, browserName }) => {
   await page.evaluate(hash => {
     window.history.pushState(null, "", hash);
     window.dispatchEvent(new PopStateEvent('popstate', null));
-  }, sheetUrl1.pathname);
+  }, sheetUrl1.href);
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});  
   await page.waitForTimeout(500); // navigating is flaky for chromium and webkit
 
@@ -156,7 +174,7 @@ test('Test database', async ({ page, browserName }) => {
   await page.locator('text=Error retrieving sheet').waitFor({timeout: 5000});
 
   // reload the second document through a page reload (use a hash this time to make sure that works as well for old links)
-  await page.goto(`/#${sheetUrl2.pathname.slice(1)}`);
+  await page.goto(sheetUrl2.href);
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
   await page.keyboard.press('Escape');
@@ -183,9 +201,9 @@ test('Test database consistency', async ({ page, browserName }) => {
 
   await page.setViewportSize({ width: width, height: height });
 
-  await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 60000});
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
+  await expect(page.getByRole('heading', { name: 'Database Consistency Test' })).toBeVisible();
   await page.keyboard.press('Escape'); // unselect all cells
   await page.waitForTimeout(500); // keyboard takes .4 sec to disappear
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -207,7 +225,7 @@ test('Test presistance of equations and image resize in documentation fields', a
   await page.goto('/');
 
   // Create a new document to test saving capability
-  await page.locator("text=Accept").click();
+  await clickAcceptIfPresent(page);
 
   // Change title
   await page.getByRole('heading', { name: 'New Sheet' }).click({ clickCount: 3 });
@@ -263,7 +281,7 @@ test('Test presistance of equations and image resize in documentation fields', a
   expect(parseLatexFloat(content)).toBeCloseTo(cos(3), precision);
 
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl1 = new URL(await page.$eval('#shareable-link', el => el.value));
 
@@ -275,7 +293,7 @@ test('Test presistance of equations and image resize in documentation fields', a
   await page.screenshot({ path: `${screenshotDir}/${browserName}_screenshot4.png`, fullPage: true });
 
   // reload the document
-  await page.goto(`/${sheetUrl1.pathname.slice(1)}`);
+  await page.goto(sheetUrl1.href);
   await page.locator('h3 >> text=Retrieving Sheet').waitFor({state: 'detached', timeout: 5000});
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 

@@ -47,11 +47,18 @@ export async function loadPyodide(browser, page) {
 
   await page.goto('/');
 
-  await page.locator('text=Accept').click();
+  await clickAcceptIfPresent(page);
 
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: pyodideLoadTimeout });
 
   return page;
+}
+
+export async function clickAcceptIfPresent(page) {
+  const accept = page.locator('text=Accept').first();
+  if (await accept.isVisible().catch(() => false)) {
+    await accept.click();
+  }
 }
 
 export async function newSheet(page) {

@@ -55,7 +55,7 @@ test('Test insert using keyboard shortcut using newly saved sheet', async ({ bro
 
   // save sheet to database
   await page.click('#upload-sheet');
-  await page.click('text=Confirm');
+  await page.click('text=Get Bookmark Link');
   await page.waitForSelector('#shareable-link');
   const sheetUrl = new URL(await page.$eval('#shareable-link', el => el.value));
 

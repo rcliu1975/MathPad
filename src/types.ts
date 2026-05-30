@@ -10,7 +10,7 @@ import type DataTableCell from "./cells/DataTableCell.svelte";
 import type { RuntimeInfo } from "./utility";
 
 export type ModalInfo = {
-  state: "uploadSheet" | "uploadPending" | "success" | "error" | "requestPersistentStorage" |
+  state: "uploadSheet" | "uploadPending" | "bookmarkTooLarge" | "success" | "error" | "requestPersistentStorage" |
          "retrieving" | "restoring" | "supportedUnits" | 
          "opening" | "saving" | "newVersion" | "insertSheet" |
          "keyboardShortcuts" | "updateAvailable" | "sheetSettings" | "generateCode" |
@@ -19,6 +19,7 @@ export type ModalInfo = {
   modalOpen: boolean;
   heading: string;
   url?: string;
+  bookmarkTitle?: string;
   error?: string;
   insertionLocation?: number;
   mathCell?: MathCell;
@@ -34,6 +35,7 @@ export type RecentSheetUrl = {
   url: string;
   accessTime: Date;
   title: string;
+  checkpointHash?: string;
 };
 
 export type RecentSheetFile = {
@@ -41,6 +43,7 @@ export type RecentSheetFile = {
   fileHandle: FileSystemFileHandle;
   accessTime: Date;
   title: string;
+  checkpointHash?: string;
 }
 
 export type RecentSheets = Map<string, RecentSheetUrl | RecentSheetFile>;
