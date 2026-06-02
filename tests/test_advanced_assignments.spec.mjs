@@ -118,6 +118,20 @@ test('Check parsing error handling with multiple assignments', async () => {
   });
 
 
+  test('Test typing text command character by character in math cell', async () => {
+    const mathField = page.locator('math-field.editable').first();
+    await mathField.click();
+    await mathField.type(String.raw`\text{abc}`);
+
+    const content = await mathField.evaluate((el) => el.value);
+    expect(content).toContain(String.raw`\text`);
+    expect(content).toContain('abc');
+
+    const parsingError = await mathField.evaluate(el => el.classList.contains('parsing-error'));
+    expect(parsingError).toBeFalsy();
+  });
+
+
   test('Check error handling with combined assignment query', async () => {
     // unrecognized assignment units
     await page.setLatex(0, 'x=5.11[mmm]=');

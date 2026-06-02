@@ -158,5 +158,8 @@ export function getBlankStatement(): BlankStatement {
 
 export function normalizeLatexForParsing(latex: string): string {
   // Keep token offsets stable by replacing spacing commands with whitespace of equal length.
-  return latex.replace(/\\(?:qquad|quad|;|,|!)/g, (match) => " ".repeat(match.length));
+  return latex
+    .replace(/\\(?:qquad|quad|;|,|!)/g, (match) => " ".repeat(match.length))
+    .replaceAll("\\left\\lbrace", "{")
+    .replaceAll("\\right\\rbrace", "}");
 }
