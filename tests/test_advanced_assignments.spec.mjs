@@ -99,6 +99,25 @@ test('Check parsing error handling with multiple assignments', async () => {
   });
 
 
+  test('Test spacing command normalization in math cell', async () => {
+    const spacingCommands = [String.raw`\quad`, String.raw`\qquad`, String.raw`\,`, String.raw`\;`, String.raw`\!`];
+
+    for (const command of spacingCommands) {
+      await page.setLatex(0, String.raw`1[m]${command}+0=`);
+
+      await page.waitForSelector('text=Updating...', {state: 'detached'});
+
+      const parsingError = await page.locator(':nth-match(math-field.editable, 1)').evaluate(el => el.classList.contains('parsing-error'));
+      expect(parsingError).toBeFalsy();
+
+      const content = await page.textContent('#result-value-0');
+      expect(parseLatexFloat(content)).toBeCloseTo(1, precision);
+      const units = await page.textContent('#result-units-0');
+      expect(units).toBe('m');
+    }
+  });
+
+
   test('Check error handling with combined assignment query', async () => {
     // unrecognized assignment units
     await page.setLatex(0, 'x=5.11[mmm]=');
@@ -143,6 +162,3 @@ test('Check parsing error handling with multiple assignments', async () => {
     expect(content).toBe('m^2'); 
 
   });
-
-
-
