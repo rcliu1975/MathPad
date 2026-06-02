@@ -239,6 +239,7 @@
     "[Escape]",
     "[IntlBackslash]",
     "alt+[Backslash]",
+    "\\"
   ];
 
   function getKeybindings(mf: MathfieldElement) {
