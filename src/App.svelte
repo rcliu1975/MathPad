@@ -72,9 +72,6 @@
   import ErrorFilled from "carbon-icons-svelte/lib/ErrorFilled.svelte";
   import Download from "carbon-icons-svelte/lib/Download.svelte";
   import Renew from "carbon-icons-svelte/lib/Renew.svelte";
-  import ArrowLeft from "carbon-icons-svelte/lib/ArrowLeft.svelte";
-  import ArrowRight from "carbon-icons-svelte/lib/ArrowRight.svelte";
-  import Printer from "carbon-icons-svelte/lib/Printer.svelte";
   import SettingsAdjust from "carbon-icons-svelte/lib/SettingsAdjust.svelte";
   import ChevronUp from "carbon-icons-svelte/lib/ChevronUp.svelte";
   import ChevronDown from "carbon-icons-svelte/lib/ChevronDown.svelte";
@@ -2784,24 +2781,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
         id="update-icon"
       />
     {/if}
-    <HeaderGlobalAction 
-      class="standalone"
-      iconDescription="Go Back"
-      onclick={() => window.history.back()}
-      icon={ArrowLeft}
-    />
-    <HeaderGlobalAction 
-      class="standalone"
-      iconDescription="Go Forward"
-      onclick={() => window.history.forward()}
-      icon={ArrowRight}
-    />
-    <HeaderGlobalAction
-      class="standalone hide-when-narrow"
-      iconDescription="Print"
-      onclick={() => window.print()}
-      icon={Printer}
-    />
 
     <div slot="skip-to-content">
       <SkipToContent />
