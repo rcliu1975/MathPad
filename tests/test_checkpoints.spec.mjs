@@ -23,7 +23,7 @@ test('Test autosave checkpoints', async ({ browserName }) => {
 
   await expect.poll(async () => page.url(), {
     timeout: 20000
-  }).toContain('#bm1.');
+  }).toContain('#b2.');
   await expect.poll(async () => page.evaluate(() => window.history.state?.checkpointHash), {
     timeout: 20000
   }).toBeFalsy();
@@ -43,13 +43,13 @@ test('Test autosave checkpoints', async ({ browserName }) => {
       recentReq.onerror = () => reject(recentReq.error);
       recentReq.onsuccess = () => {
         const recentSheets = recentReq.result;
-        const entry = [...recentSheets.entries()].find(([, value]) => typeof value.url === 'string' && value.url.includes('#bm1.'));
+        const entry = [...recentSheets.entries()].find(([, value]) => typeof value.url === 'string' && value.url.includes('#b2.'));
         resolve(entry ? {title: entry[1].title, url: entry[1].url, checkpointHash: entry[1].checkpointHash ?? null} : null);
       };
     };
   }));
   expect(recentSheetInfo).not.toBeNull();
-  expect(recentSheetInfo.url).toContain('#bm1.');
+  expect(recentSheetInfo.url).toContain('#b2.');
   expect(recentSheetInfo.checkpointHash).toBeNull();
 
   // recover from the latest autosave via Recent Sheets
@@ -62,7 +62,7 @@ test('Test autosave checkpoints', async ({ browserName }) => {
   await page.waitForSelector('.status-footer', { state: 'detached', timeout: 5000 });
 
   expect(page.url()).not.toContain('temp-checkpoint');
-  expect(page.url()).toContain('#bm1.');
+  expect(page.url()).toContain('#b2.');
 
   const content = await page.locator('#result-value-0').textContent();
   expect(parseLatexFloat(content)).toBeCloseTo(2, precision);

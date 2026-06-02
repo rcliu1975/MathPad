@@ -4,9 +4,9 @@ import type { Sheet } from "./sheet/Sheet";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const bookmarkVersion = "bm1";
-const bookmarkEncodingGzip = "gz";
-const bookmarkEncodingRaw = "raw";
+const bookmarkVersion = "b2";
+const bookmarkEncodingDeflate = "d";
+const bookmarkEncodingRaw = "r";
 
 export const bookmarkUrlSoftLimit = 350000;
 
@@ -18,28 +18,35 @@ export type BookmarkSharePayload = {
   checksum: string;
 };
 
-type BookmarkShareBody = Omit<BookmarkSharePayload, "checksum">;
+type BookmarkShareBody = [
+  title: string,
+  history: History,
+  sheet: Sheet
+];
 
-function toHex(bytes: Uint8Array): string {
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
+type BookmarkShareEncodedBody = [
+  title: string,
+  history: History,
+  sheet: Sheet,
+  checksum: string
+];
 
-async function digestHex(input: string): Promise<string> {
+async function digestBase64Url(input: string, bytes = 12): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", encoder.encode(input));
-  return toHex(new Uint8Array(hash));
+  return base64UrlEncode(new Uint8Array(hash).subarray(0, bytes));
 }
 
-function supportsGzipCompression(): boolean {
+function supportsDeflateCompression(): boolean {
   return typeof CompressionStream !== "undefined" && typeof DecompressionStream !== "undefined";
 }
 
-async function gzipCompress(input: Uint8Array): Promise<Uint8Array> {
-  const stream = new Blob([input]).stream().pipeThrough(new CompressionStream("gzip"));
+async function deflateCompress(input: Uint8Array): Promise<Uint8Array> {
+  const stream = new Blob([input]).stream().pipeThrough(new CompressionStream("deflate"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-async function gzipDecompress(input: Uint8Array): Promise<Uint8Array> {
-  const stream = new Blob([input]).stream().pipeThrough(new DecompressionStream("gzip"));
+async function deflateDecompress(input: Uint8Array): Promise<Uint8Array> {
+  const stream = new Blob([input]).stream().pipeThrough(new DecompressionStream("deflate"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
@@ -91,14 +98,14 @@ function base64UrlDecode(input: string): Uint8Array {
   return base64ToBytes(base64);
 }
 
-async function encodeBody(body: BookmarkShareBody): Promise<{ encoding: string; payload: string; }> {
+async function encodeBody(body: BookmarkShareEncodedBody): Promise<{ encoding: string; payload: string; }> {
   const json = JSON.stringify(body);
   const bytes = encoder.encode(json);
 
-  if (supportsGzipCompression()) {
-    const compressed = await gzipCompress(bytes);
+  if (supportsDeflateCompression()) {
+    const compressed = await deflateCompress(bytes);
     return {
-      encoding: bookmarkEncodingGzip,
+      encoding: bookmarkEncodingDeflate,
       payload: base64UrlEncode(compressed)
     };
   }
@@ -109,22 +116,22 @@ async function encodeBody(body: BookmarkShareBody): Promise<{ encoding: string; 
   };
 }
 
-async function decodeBody(encoding: string, payload: string): Promise<BookmarkShareBody> {
+async function decodeBody(encoding: string, payload: string): Promise<BookmarkShareEncodedBody> {
   const bytes = base64UrlDecode(payload);
   let rawBytes: Uint8Array;
 
-  if (encoding === bookmarkEncodingGzip) {
-    if (!supportsGzipCompression()) {
+  if (encoding === bookmarkEncodingDeflate) {
+    if (!supportsDeflateCompression()) {
       throw new Error("This browser cannot decompress bookmark links.");
     }
-    rawBytes = await gzipDecompress(bytes);
+    rawBytes = await deflateDecompress(bytes);
   } else if (encoding === bookmarkEncodingRaw) {
     rawBytes = bytes;
   } else {
     throw new Error(`Unsupported bookmark encoding: ${encoding}`);
   }
 
-  return JSON.parse(decoder.decode(rawBytes)) as BookmarkShareBody;
+  return JSON.parse(decoder.decode(rawBytes)) as BookmarkShareEncodedBody;
 }
 
 export function formatBookmarkTitle(title: string): string {
@@ -153,15 +160,9 @@ export function getBookmarkShareFragment(hash: string): string | null {
 }
 
 export async function createBookmarkShareFragment(sheet: Sheet, history: History, title: string): Promise<string> {
-  const body: BookmarkShareBody = {
-    version: 1,
-    title,
-    history,
-    sheet
-  };
-
-  const checksum = await digestHex(JSON.stringify(body));
-  const encoded = await encodeBody({ ...body, checksum });
+  const body: BookmarkShareBody = [title, history, sheet];
+  const checksum = await digestBase64Url(JSON.stringify(body));
+  const encoded = await encodeBody([title, history, sheet, checksum]);
 
   return `${bookmarkVersion}.${encoded.encoding}.${encoded.payload}`;
 }
@@ -190,13 +191,19 @@ export async function decodeBookmarkShareFragment(fragment: string): Promise<Boo
 
   const encoding = parts[1];
   const payload = parts.slice(2).join(".");
-  const body = await decodeBody(encoding, payload);
-  const { checksum, ...withoutChecksum } = body as BookmarkSharePayload;
-  const expectedChecksum = await digestHex(JSON.stringify(withoutChecksum));
+  const body = await decodeBody(encoding, payload) as BookmarkShareEncodedBody;
+  const [title, history, sheet, checksum] = body;
+  const expectedChecksum = await digestBase64Url(JSON.stringify([title, history, sheet]));
 
   if (checksum !== expectedChecksum) {
     throw new Error("Bookmark share link checksum mismatch.");
   }
 
-  return body as BookmarkSharePayload;
+  return {
+    version: 2,
+    title,
+    history,
+    sheet,
+    checksum
+  };
 }

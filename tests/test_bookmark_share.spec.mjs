@@ -63,9 +63,9 @@ test('Bookmark share updates the address bar when it succeeds', async ({ page })
   await page.click('text=Get Bookmark Link');
 
   await page.waitForSelector('#shareable-link');
-  await page.waitForFunction(() => window.location.hash.startsWith('#bm1.'), null, { timeout: 10000 });
+  await page.waitForFunction(() => window.location.hash.startsWith('#b2.'), null, { timeout: 10000 });
 
   const bookmarkUrl = new URL(page.url());
-  expect(bookmarkUrl.hash.startsWith('#bm1.')).toBeTruthy();
+  expect(bookmarkUrl.hash.startsWith('#b2.')).toBeTruthy();
   expect(bookmarkUrl.pathname).toBe('/');
 });

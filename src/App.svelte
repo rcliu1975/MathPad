@@ -2686,16 +2686,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
     fill: limegreen;
   }
 
-  :global(.standalone) {
-    display: none !important;
-  }
-
-  @media all and (display-mode: standalone) {
-    :global(.standalone) {
-      display: block !important;
-    }
-  }
-
   @media (max-width: 450px) {
     :global(.hide-when-kinda-narrow) {
       display: none !important;
