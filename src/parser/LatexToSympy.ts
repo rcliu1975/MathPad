@@ -15,8 +15,7 @@ import type { FieldTypes, Statement, QueryStatement, RangeQueryStatement, UserFu
               SubQueryStatement, CodeCellFunctionStatement,
               FixMixedId} from "./types";
 import { type Insertion, type Replacement, applyEdits,
-         createSubQuery, PYTHON_RESERVED, getBlankStatement,
-         normalizeLatexForParsing } from "./utility";
+         createSubQuery, PYTHON_RESERVED, getBlankStatement } from "./utility";
 
 import { GREEK_CHARS, UNASSIGNABLE, COMPARISON_MAP, 
          UNITS_WITH_OFFSET, TYPE_PARSING_ERRORS, BUILTIN_FUNCTION_MAP,
@@ -77,8 +76,7 @@ export function parseLatex(latex: string, id: number, subId: number, type: Field
     parsingErrorMessage: "",
   }
 
-  const normalizedLatex = normalizeLatexForParsing(latex);
-  const input = new CharStream(normalizedLatex);
+  const input = new CharStream(latex);
   const lexer = new LatexLexer(input);
   const tokens = new CommonTokenStream(lexer);
   const parser = new LatexParser(tokens);

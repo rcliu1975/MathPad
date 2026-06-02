@@ -155,8 +155,3 @@ export function createSubQuery(name: string): SubQueryStatement {
 export function getBlankStatement(): BlankStatement {
   return { type: "blank", params: [], variableNameMap: {}, implicitParams: [], isFromPlotCell: false};
 }
-
-export function normalizeLatexForParsing(latex: string): string {
-  // Keep token offsets stable by replacing spacing commands with whitespace of equal length.
-  return latex.replace(/\\(?:qquad|quad|;|,|!)/g, (match) => " ".repeat(match.length));
-}
