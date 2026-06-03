@@ -89,6 +89,14 @@
   createCustomUnits();
 
   const apiUrl = window.location.origin;
+  const titleDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
 
 
   // need for File System Access API calls
@@ -175,6 +183,8 @@
   const minNumCheckpoints = 10;
   const decrementNumCheckpoints = 20; 
   let autosaveIntervalId: null | number = null;
+  let titleClockTick = $state(new Date());
+  let titleClockIntervalId: null | number = null;
 
   let showKeyboard = $derived(Boolean(appState.activeMathField));
   let alwaysHideKeyboard = $state(true);
@@ -243,6 +253,14 @@
       pyodideWorker = null;
     }
   }
+
+  function formatTitleDateTime(date: Date) {
+    const parts = Object.fromEntries(
+      titleDateTimeFormatter.formatToParts(date).map((part) => [part.type, part.value])
+    ) as Record<string, string>;
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
+  }
+
   startWebWorker();
 
   
@@ -257,6 +275,9 @@
     }
     if (checkServiceWorkerIntervalId) {
       window.clearInterval(checkServiceWorkerIntervalId);
+    }
+    if (titleClockIntervalId) {
+      window.clearInterval(titleClockIntervalId);
     }
   });
 
@@ -281,6 +302,9 @@
     window.addEventListener("beforeprint", handleBeforePrint);
 
     autosaveIntervalId = window.setInterval(saveLocalCheckpoint, autosaveInterval);
+    titleClockIntervalId = window.setInterval(() => {
+      titleClockTick = new Date();
+    }, 60 * 1000);
 
     if ( window.self !== window.top) {
       inIframe = true;
@@ -2412,7 +2436,8 @@ Please include a link to this sheet in the email to assist in debugging the prob
   }
 
   $effect(() => {
-    document.title = `MathPad: ${appState.title}`;
+    titleClockTick;
+    document.title = `MathPad: ${appState.title} | ${formatTitleDateTime(titleClockTick)}`;
   });
 
 </script>

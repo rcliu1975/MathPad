@@ -41,6 +41,9 @@ export function createCustomUnits() {
     femto: {
       definition: '1e-15'
     },
+    percent: {
+      definition: '0.01'
+    },
     // absolute or dynamic viscosity
     poise: {
       prefixes: 'long',

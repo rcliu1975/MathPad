@@ -121,6 +121,7 @@ const unitsKeyboards: Keyboards = {
         ],
         [
           new Button({ buttonText: String.raw`\left\lbrack femto\right\rbrack `, command: "insert" }),
+          new Button({ buttonText: "[%]", content: String.raw`\left\lbrack percent\right\rbrack `, command: "insert", rawText: true }),
           new Blank(),
           new Blank(),
           new Blank(),
