@@ -454,6 +454,25 @@
     mathCellChanged();
   }
 
+  function handleDuplicateMathCell(event: {detail: {index: number}}) {
+    const sourceCell = appState.cells[event.detail.index];
+    if (!(sourceCell instanceof MathCell)) {
+      return;
+    }
+
+    const duplicateCell = new MathCell();
+    duplicateCell.mathField.latex = sourceCell.mathField.latex;
+    duplicateCell.config = sourceCell.config ? structuredClone(sourceCell.config) : null;
+
+    appState.cells.splice(event.detail.index + 1, 0, duplicateCell);
+    appState.results.splice(event.detail.index + 1, 0, null);
+    appState.system_results.splice(event.detail.index + 1, 0, null);
+    appState.activeCell = event.detail.index + 1;
+
+    triggerSaveNeeded();
+    mathCellChanged();
+  }
+
   function handleCellModal(event: {detail: {modalInfo: ModalInfo}}) {
     modalInfo = event.detail.modalInfo;
   }
@@ -3003,6 +3022,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         generateCode={loadGenerateCodeModal}
         insertMathCellAfter={handleInsertMathCell}
         insertInsertCellAfter={handleInsertInsertCell}
+        duplicateMathCell={handleDuplicateMathCell}
         modal={handleCellModal}
         bind:this={cellList}
         {mathCellChanged}

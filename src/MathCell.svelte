@@ -29,6 +29,7 @@
     generateCode: (arg: {detail: {index: number}}) => void;
     insertMathCellAfter: (arg: {detail: {index: number}}) => void;
     insertInsertCellAfter: (arg: {detail: {index: number}}) => void;
+    duplicateMathCell: (arg: {detail: {index: number}}) => void;
     mathCellChanged: () => void;
     triggerSaveNeeded: (pendingMathCellChange: boolean) => void;
   }
@@ -40,6 +41,7 @@
       generateCode,
       insertMathCellAfter,
       insertInsertCellAfter,
+      duplicateMathCell,
       mathCellChanged,
       triggerSaveNeeded
     }: Props = $props(); 
@@ -628,6 +630,7 @@
     enter={() => insertMathCellAfter({detail: {index: index}})}
     shiftEnter={() => insertMathCellAfter({detail: {index: index}})}
     modifierEnter={() => insertInsertCellAfter({detail: {index: index}})}
+    duplicate={() => duplicateMathCell({detail: {index: index}})}
     mathField={mathCell?.mathField}
     parsingError={mathCell.mathField.parsingError}
     parsePending={mathCell.mathField.parsePending}

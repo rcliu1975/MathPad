@@ -41,6 +41,7 @@
     generateCode: (arg: {detail: {index: number}}) => void;
     insertMathCellAfter: (arg: {detail: {index: number}}) => void;
     insertInsertCellAfter: (arg: {detail: {index: number}}) => void;
+    duplicateMathCell: (arg: {detail: {index: number}}) => void;
     modal: (arg: {detail: {modalInfo: ModalInfo}}) => void;
     insertSheet: (arg: {detail: {index: number}}) => void;
     startDrag: (arg: {detail: {clientY: number, index: number}}) => void;
@@ -55,6 +56,7 @@
     generateCode,
     insertMathCellAfter,
     insertInsertCellAfter,
+    duplicateMathCell,
     modal,
     startDrag,
     insertSheet,
@@ -236,6 +238,7 @@
         {generateCode}
         {insertMathCellAfter}
         {insertInsertCellAfter}
+        {duplicateMathCell}
         {mathCellChanged}
         {triggerSaveNeeded}
         bind:this={cellElement}

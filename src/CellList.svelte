@@ -14,6 +14,7 @@
     generateCode: (arg: {detail: {index: number}}) => void;
     insertMathCellAfter: (arg: {detail: {index: number}}) => void;
     insertInsertCellAfter: (arg: {detail: {index: number}}) => void;
+    duplicateMathCell: (arg: {detail: {index: number}}) => void;
     modal: (arg: {detail: {modalInfo: ModalInfo}}) => void;
     mathCellChanged: () => void;
     triggerSaveNeeded: (mathCellChangePending?: boolean) => void;
@@ -26,6 +27,7 @@
     generateCode,
     insertMathCellAfter,
     insertInsertCellAfter,
+    duplicateMathCell,
     modal,
     mathCellChanged,
     triggerSaveNeeded
@@ -245,6 +247,7 @@
           {generateCode}
           {insertMathCellAfter}
           {insertInsertCellAfter}
+          {duplicateMathCell}
           {modal}
           {mathCellChanged}
           {triggerSaveNeeded}
@@ -263,4 +266,3 @@
     />
   </li>
 </ul>
-

@@ -50,6 +50,21 @@ test('Context menu copy and select all', async () => {
   expect(parseLatexFloat(content)).toBeCloseTo(3, precision);
 });
 
+test('Context menu duplicate math cell', async () => {
+  await page.locator('#cell-0 >> math-field.editable').type("1+2=");
+
+  await page.locator('#cell-0 >> math-field.editable').click({button: "right"});
+  await page.locator('text=Duplicate').click();
+
+  await page.waitForSelector('text=Updating...', {state: 'detached'});
+
+  const firstResult = await page.textContent(`#result-value-0`);
+  const duplicatedResult = await page.textContent(`#result-value-1`);
+
+  expect(parseLatexFloat(firstResult)).toBeCloseTo(3, precision);
+  expect(parseLatexFloat(duplicatedResult)).toBeCloseTo(3, precision);
+});
+
 test('Open context with menu button', async () => {
   const modifierKey = (await page.evaluate('window.modifierKey') )=== "metaKey" ? "Meta" : "Control";
 

@@ -28,6 +28,7 @@
     enter?: () => void;
     shiftEnter?: () => void;
     modifierEnter?: () => void;
+    duplicate?: () => void;
   }
 
   let {
@@ -43,7 +44,8 @@
     update,
     enter,
     shiftEnter,
-    modifierEnter
+    modifierEnter,
+    duplicate
   }: Props = $props();
 
   let mathLiveField: MathfieldElement = $state();
@@ -219,10 +221,9 @@
         keyboardShortcut: 'meta+V',
       },
       {
-        label: 'Delete',
-        onMenuSelect: () => mf.executeCommand(['insert', '']),
-        visible: editable,
-        enabled: () => hasSelection(mf),
+        label: 'Duplicate',
+        onMenuSelect: () => duplicate?.(),
+        visible: editable && Boolean(duplicate),
       },
       {
         label: 'Select All',
