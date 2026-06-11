@@ -135,6 +135,14 @@
       <td class="first-column"><span class="key">Esc</span></td>
       <td>Unselect all cells</td>
     </tr>
+    <tr>
+      <td class="first-column"><span class="key">{modifier}</span> + <span class="key">C</span></td>
+      <td>Copy selected cell block</td>
+    </tr>
+    <tr>
+      <td class="first-column"><span class="key">{modifier}</span> + <span class="key">V</span></td>
+      <td>Paste copied cell block</td>
+    </tr>
   </tbody>
 </table>
 

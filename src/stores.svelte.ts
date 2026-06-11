@@ -47,6 +47,8 @@ type AppState = {
 
   prefersReducedMotion: boolean;
   activeCell: number;
+  selectedCellRange: CellSelectionRange | null;
+  cellSelectionInProgress: boolean;
   activeMathField: MathField | null;
 
   debug: boolean;
@@ -85,6 +87,8 @@ const appState: AppState = $state<AppState>({
 
   prefersReducedMotion: true,
   activeCell: -1,
+  selectedCellRange: null,
+  cellSelectionInProgress: false,
   activeMathField: null,
 
   debug: false,
@@ -101,7 +105,56 @@ const appState: AppState = $state<AppState>({
   exportCenteredEquations: false
 });
 
-export default appState;
+  export default appState;
+
+export type CellSelectionRange = {
+  start: number;
+  end: number;
+};
+
+function normalizeCellSelection(start: number, end: number): CellSelectionRange {
+  return start <= end ? {start, end} : {start: end, end: start};
+}
+
+export function clearCellSelection() {
+  appState.selectedCellRange = null;
+}
+
+export function setCellSelection(start: number, end: number) {
+  if (start < 0 || end < 0 || appState.cells.length === 0) {
+    clearCellSelection();
+    return;
+  }
+
+  const normalized = normalizeCellSelection(
+    Math.min(start, appState.cells.length - 1),
+    Math.min(end, appState.cells.length - 1)
+  );
+
+  appState.selectedCellRange = normalized;
+  appState.activeCell = normalized.end;
+}
+
+export function hasCellSelection() {
+  return Boolean(appState.selectedCellRange);
+}
+
+export function isCellSelected(index: number) {
+  if (!appState.selectedCellRange) {
+    return false;
+  }
+
+  return index >= appState.selectedCellRange.start && index <= appState.selectedCellRange.end;
+}
+
+export function getSelectedCellIndices() {
+  if (!appState.selectedCellRange) {
+    return [];
+  }
+
+  const {start, end} = appState.selectedCellRange;
+  return Array.from({length: end - start + 1}, (_, i) => start + i);
+}
 
 export async function addCell(type: CellTypes, index?: number) {
   if (index === undefined){
@@ -146,6 +199,7 @@ export async function addCell(type: CellTypes, index?: number) {
   appState.system_results.splice(index, 0, null);
 
   appState.activeCell = index;
+  clearCellSelection();
 }
 
 export function clearResults() {
@@ -155,9 +209,26 @@ export function clearResults() {
   appState.sub_results =  new SvelteMap(); 
 }
 
-export function handleClickInCell(index: number) {
-  if (appState.activeCell !== index && !appState.inCellInsertMode)
+export function handleClickInCell(index: number, extendSelection = false) {
+  if (appState.inCellInsertMode || appState.cellSelectionInProgress) {
+    return;
+  }
+
+  if (extendSelection) {
+    const anchor = appState.selectedCellRange?.start ?? appState.activeCell;
+    if (anchor >= 0) {
+      setCellSelection(anchor, index);
+      return;
+    }
+  }
+
+  if (appState.selectedCellRange) {
+    clearCellSelection();
+  }
+
+  if (appState.activeCell !== index) {
     appState.activeCell = index;
+  }
 }
 
 export function getSheetObject(includeResults=true): Sheet {
@@ -207,6 +278,7 @@ export async function resetSheet() {
   appState.history = [];
   appState.insertedSheets = [];
   appState.activeCell = 0;
+  clearCellSelection();
   appState.sheetId = window.crypto.randomUUID();
 }
 
@@ -264,6 +336,7 @@ export function deleteCell(index: number, forceDelete=false) {
   appState.cells = newCells;
   appState.results = newResults;
   appState.system_results = newSystemResults;
+  clearCellSelection();
 
   appState.resultsInvalid = true;
 }

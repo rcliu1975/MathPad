@@ -4,6 +4,7 @@
   import type { MathCellConfig } from "./sheet/Sheet";
   import DataTableCell from "./cells/DataTableCell.svelte";
   import appState from "./stores.svelte";
+  import { clearCellSelection, setCellSelection } from "./stores.svelte";
   import Cell from "./Cell.svelte";
   import ButtonBar from "./ButtonBar.svelte";
 
@@ -41,6 +42,123 @@
   let grabOffset: number;
   let scrollingContainer: HTMLElement;
   let sheetBody: HTMLUListElement;
+  let cellSelectionActive = $state(false);
+  let cellSelectionAnchorIndex = $state(-1);
+  let cellSelectionPointerId = $state<number | null>(null);
+
+  function isSelectionStartAllowed(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    return !target.closest(
+      "input, textarea, select, button, math-field, [contenteditable='true'], [contenteditable=''], .handle, .controls, a"
+    );
+  }
+
+  function getCellContainerIndex(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) {
+      return null;
+    }
+
+    const container = target.closest("[id^='cell-container-']");
+    if (!(container instanceof HTMLElement)) {
+      return null;
+    }
+
+    const index = Number(container.id.replace("cell-container-", ""));
+    return Number.isInteger(index) ? index : null;
+  }
+
+  function getCellIndexAtClientY(clientY: number) {
+    if (!appState.cells.length) {
+      return null;
+    }
+
+    let lastVisibleIndex = 0;
+
+    for (let i = 0; i < appState.cells.length; i++) {
+      const container = document.getElementById(`cell-container-${i}`);
+      if (!container) {
+        continue;
+      }
+
+      lastVisibleIndex = i;
+      const rect = container.getBoundingClientRect();
+      if (clientY <= rect.bottom) {
+        return i;
+      }
+    }
+
+    return lastVisibleIndex;
+  }
+
+  function stopCellSelection() {
+    document.body.style.userSelect = "";
+    appState.cellSelectionInProgress = false;
+    cellSelectionActive = false;
+    cellSelectionAnchorIndex = -1;
+    cellSelectionPointerId = null;
+
+    window.removeEventListener("pointermove", handleCellSelectionMove);
+    window.removeEventListener("pointerup", handleCellSelectionUp);
+    window.removeEventListener("pointercancel", handleCellSelectionUp);
+  }
+
+  function handleCellSelectionMove(event: PointerEvent) {
+    if (!cellSelectionActive || cellSelectionPointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const currentIndex = getCellIndexAtClientY(event.clientY);
+    if (currentIndex === null) {
+      return;
+    }
+
+    setCellSelection(cellSelectionAnchorIndex, currentIndex);
+  }
+
+  function handleCellSelectionUp(event: PointerEvent) {
+    if (cellSelectionPointerId !== event.pointerId) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      stopCellSelection();
+    }, 0);
+  }
+
+  function startCellSelection(event: PointerEvent) {
+    if ((event.button ?? 0) > 0 || dragging) {
+      return;
+    }
+
+    if (!isSelectionStartAllowed(event.target)) {
+      return;
+    }
+
+    const index = getCellContainerIndex(event.target);
+    if (index === null) {
+      return;
+    }
+
+    event.preventDefault();
+
+    clearCellSelection();
+    setCellSelection(index, index);
+
+    appState.cellSelectionInProgress = true;
+    cellSelectionActive = true;
+    cellSelectionAnchorIndex = index;
+    cellSelectionPointerId = event.pointerId;
+    document.body.style.userSelect = "none";
+
+    window.addEventListener("pointermove", handleCellSelectionMove, {passive: false});
+    window.addEventListener("pointerup", handleCellSelectionUp);
+    window.addEventListener("pointercancel", handleCellSelectionUp);
+  }
 
   export async function getMarkdown(centerEquations= false): Promise<string> {
     let markdown = "";
@@ -56,6 +174,7 @@
 
   function startDrag(event) {
     if (!dragging) {
+      stopCellSelection();
       draggingSourceIndex = event.detail.index; 
       
       scrollingContainer = document.getElementById("main-content");
@@ -222,9 +341,10 @@
 
 <div id="dragging-skeleton" class:dragging bind:this={draggingSkeleton}></div>
 
-<ul
+  <ul
   class="sheet-body"
   bind:this={sheetBody}
+  onpointerdown={startCellSelection}
 >
   {#each appState.cells as cell, i (cell.id)}
     <li>

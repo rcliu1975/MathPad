@@ -1,5 +1,6 @@
 <script lang="ts">
   import appState from "./stores.svelte";
+  import { clearCellSelection } from "./stores.svelte";
 
   interface Props {
     title: string;
@@ -36,7 +37,7 @@
 </style>
 
 <h1
-  onfocus={() => {appState.activeCell = -1; spellcheck = true}}
+  onfocus={() => {appState.activeCell = -1; clearCellSelection(); spellcheck = true}}
   onblur={() => spellcheck = false}
   contenteditable="true"
   bind:textContent={title}

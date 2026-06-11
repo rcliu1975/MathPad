@@ -30,7 +30,10 @@ export function compareImages(file1, file2) {
 
 
 export async function loadPyodide(browser, page) {
-  page = await browser.newPage();
+  const context = await browser.newContext({
+    permissions: ['clipboard-read', 'clipboard-write']
+  });
+  page = await context.newPage();
 
   page.setLatex = async function (cellIndex, latex, subIndex) {
     await this.evaluate(([cellIndex, latex, subIndex]) => window.setCellLatex(cellIndex, latex, subIndex), 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import appState from "./stores.svelte";
-  import { handleClickInCell, deleteCell } from "./stores.svelte";
+  import { handleClickInCell } from "./stores.svelte";
   import type { ModalInfo } from "./types";
   import type { MathCellConfig } from "./sheet/Sheet";
   import MathCellElement from "./MathCell.svelte";
@@ -66,6 +66,9 @@
 
   let cell = $derived(appState.cells[index]);
   let selected = $derived(appState.activeCell === index);
+  let rangeSelected = $derived(Boolean(appState.selectedCellRange &&
+    index >= appState.selectedCellRange.start &&
+    index <= appState.selectedCellRange.end));
 
   let contentDiv: HTMLDivElement;
   let dragHandleElement: HTMLSpanElement;
@@ -197,6 +200,11 @@
     .content.selected {
       border: 2px solid lightgray;
     }
+
+    .content.range-selected {
+      border: 2px solid #0f62fe;
+      background: rgba(15, 98, 254, 0.06);
+    }
   }
 
   :global(div.outer-container:not(.dragging)) span.handle {
@@ -226,9 +234,11 @@
        of Ctrl+ArrowUp and Ctrl+ArrowDown -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
-    class="content" class:selected
+    class="content"
+    class:selected={selected}
+    class:range-selected={rangeSelected}
     id={`cell-${index}`}
-    onclickcapture={() => handleClickInCell(index)}
+    onclickcapture={(event) => handleClickInCell(index, event.shiftKey)}
     onfocusin={() => handleClickInCell(index)}
     bind:this={contentDiv}
   >

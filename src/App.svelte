@@ -41,6 +41,7 @@
   import { registerSW } from 'virtual:pwa-register';
 
   import { get, set, update, delMany } from 'idb-keyval';
+  import { clearCellSelection, getSelectedCellIndices, hasCellSelection, setCellSelection } from "./stores.svelte";
 
   import {
     Modal,
@@ -146,6 +147,34 @@
   // webkit in particular waits for the progress bar to go down before playwright considers the DOM stable
   (window as any).forceDeleteCell = (index: number) => {
                                                           deleteCell(index, true);
+                                                          mathCellChanged();
+                                                        }
+  (window as any).forceSelectCellRange = (start: number, end: number) => {
+                                                          const normalizedStart = Math.min(start, end);
+                                                          const normalizedEnd = Math.max(start, end);
+                                                          appState.selectedCellRange = {
+                                                            start: normalizedStart,
+                                                            end: normalizedEnd
+                                                          };
+                                                          appState.activeCell = normalizedEnd;
+                                                        }
+  (window as any).forceClearCellSelection = () => {
+                                                          appState.selectedCellRange = null;
+                                                        }
+  (window as any).forceGetCellSelection = () => {
+                                                          return appState.selectedCellRange ? {...appState.selectedCellRange} : null;
+                                                        }
+  (window as any).forceSerializeCellRange = (start: number, end: number) => {
+                                                          const normalizedStart = Math.min(start, end);
+                                                          const normalizedEnd = Math.max(start, end);
+                                                          return appState.cells
+                                                            .slice(normalizedStart, normalizedEnd + 1)
+                                                            .map((cell) => cell.serialize())
+                                                            .filter((cell) => cell !== null);
+                                                        }
+  (window as any).forceInsertCellBlockAt = async (index: number, cells: any[]) => {
+                                                          await insertClipboardCellsAt(index, cells);
+                                                          triggerSaveNeeded();
                                                           mathCellChanged();
                                                         }
 
@@ -422,6 +451,7 @@
 
   async function handleBeforePrint() {
     appState.activeCell = -1;
+    clearCellSelection();
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -473,6 +503,83 @@
     mathCellChanged();
   }
 
+  function getSelectedCellsForClipboard() {
+    return getSelectedCellIndices()
+      .map((index) => appState.cells[index].serialize())
+      .filter((cell) => cell !== null) as any[];
+  }
+
+  async function copySelectedCellsToClipboard() {
+    const cells = getSelectedCellsForClipboard();
+    if (cells.length === 0) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(JSON.stringify({
+      source: "MathPad",
+      version: 1,
+      kind: "cell-block",
+      cells
+    }));
+  }
+
+  function parseCellBlockClipboardText(text: string) {
+    try {
+      const parsed = JSON.parse(text);
+      if (
+        parsed &&
+        parsed.source === "MathPad" &&
+        parsed.kind === "cell-block" &&
+        Array.isArray(parsed.cells)
+      ) {
+        return parsed.cells;
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
+  async function insertClipboardCellsAt(index: number, cells: any[]) {
+    if (cells.length === 0) {
+      return;
+    }
+
+    const newCells = await Promise.all(cells.map((value) => cellFactory(value, appState.config)));
+    for (const cell of newCells) {
+      cell.id = BaseCell.nextId++;
+    }
+
+    appState.cells = [...appState.cells.slice(0, index), ...newCells, ...appState.cells.slice(index)];
+    appState.results = [...appState.results.slice(0, index), ...Array(newCells.length).fill(null), ...appState.results.slice(index)];
+    appState.system_results = [...appState.system_results.slice(0, index), ...Array(newCells.length).fill(null), ...appState.system_results.slice(index)];
+    setCellSelection(index, index + newCells.length - 1);
+  }
+
+  async function pasteSelectedCellsFromClipboard() {
+    const text = await navigator.clipboard.readText();
+    const cells = parseCellBlockClipboardText(text);
+    if (!cells) {
+      return;
+    }
+
+    if (appState.selectedCellRange) {
+      const {start, end} = appState.selectedCellRange;
+      appState.cells = [...appState.cells.slice(0, start), ...appState.cells.slice(end + 1)];
+      appState.results = [...appState.results.slice(0, start), ...appState.results.slice(end + 1)];
+      appState.system_results = [...appState.system_results.slice(0, start), ...appState.system_results.slice(end + 1)];
+      clearCellSelection();
+      await insertClipboardCellsAt(start, cells);
+    } else {
+      const insertIndex = appState.activeCell >= 0 ? appState.activeCell + 1 : appState.cells.length;
+      await insertClipboardCellsAt(insertIndex, cells);
+    }
+
+    triggerSaveNeeded();
+    mathCellChanged();
+  }
+
   function handleCellModal(event: {detail: {modalInfo: ModalInfo}}) {
     modalInfo = event.detail.modalInfo;
   }
@@ -481,6 +588,25 @@
     // this first switch statement is for keyboard shortcuts that should ignore defaultPrevented
     // since some components try to handle these particular events
     // probably would be better to catch these on the capture phase to prevent this issue
+    if (!modalInfo.modalOpen && hasCellSelection() && event[appState.modifierKey]) {
+      switch (event.key.toLowerCase()) {
+        case "c":
+          event.preventDefault();
+          void copySelectedCellsToClipboard();
+          return;
+      }
+    }
+
+    if (!modalInfo.modalOpen &&
+        !appState.activeMathField &&
+        event[appState.modifierKey] &&
+        event.key.toLowerCase() === "v" &&
+        (hasCellSelection() || appState.activeCell >= 0)) {
+      event.preventDefault();
+      void pasteSelectedCellsFromClipboard();
+      return;
+    }
+
     switch (event.key) {
       case "ArrowDown":
         if (!event[appState.modifierKey] || modalInfo.modalOpen) {
@@ -565,6 +691,7 @@
           break;
         }
         appState.activeCell = -1;
+        clearCellSelection();
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }
@@ -1382,6 +1509,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       clearResults();
       appState.resultsInvalid = true;
       appState.activeCell = -1;
+      clearCellSelection();
 
       await tick();
 
@@ -2802,7 +2930,10 @@ Please include a link to this sheet in the email to assist in debugging the prob
     <span 
       class="logo" 
       slot="platform"
-      onclick={() => appState.activeCell = -1}
+      onclick={() => {
+        appState.activeCell = -1;
+        clearCellSelection();
+      }}
     >
       <img class="logo" src="logo_dark.svg" alt="MathPad">
     </span>
@@ -3005,7 +3136,10 @@ Please include a link to this sheet in the email to assist in debugging the prob
   <Content>
     <div
       class="sheet-margin"
-      onclick={() => appState.activeCell = -1}
+      onclick={() => {
+        appState.activeCell = -1;
+        clearCellSelection();
+      }}
     >
     </div>
 
@@ -3038,7 +3172,10 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
     <div
       class="sheet-margin"
-      onclick={() => appState.activeCell = -1}
+      onclick={() => {
+        appState.activeCell = -1;
+        clearCellSelection();
+      }}
     >
     </div>
 
