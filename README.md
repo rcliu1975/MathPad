@@ -107,6 +107,148 @@ npm run test
 - `npm run test:seed`: 匯入測試用 KV 資料
 - `npm run test`: 執行 Playwright 測試
 
+---
+
+# 用 user mode systemd 跑 MathPad 的步驟
+
+根據 README 確認：`npm run build` 完成後，`public/` 資料夾的內容可以作為靜態網站部署到任意 web server。 流程如下：
+
+---
+
+## 1. 前置需求
+
+```bash
+# 確認 Node.js ≥ 18、git
+node -v
+git --version
+
+# 安裝 serve（靜態檔案伺服器）
+npm install -g serve
+```
+
+---
+
+## 2. Clone 並建置
+
+```bash
+git clone https://github.com/mgreminger/EngineeringPaper.xyz.git
+cd EngineeringPaper.xyz
+
+npm install
+npm run build
+# 產出目錄：./public/
+```
+
+建置完成後確認：
+
+```bash
+ls public/   # 應看到 index.html、_app/、sw.js 等
+```
+
+---
+
+## 3. 建立 user-mode systemd service
+
+```bash
+# 確保 user systemd 目錄存在
+mkdir -p ~/.config/systemd/user
+```
+
+建立 service 檔，**路徑請依實際調整**：
+
+```bash
+cat > ~/.config/systemd/user/engineeringpaper.service << 'EOF'
+[Unit]
+Description=EngineeringPaper.xyz static site
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/EngineeringPaper.xyz
+ExecStart=/usr/bin/env npx serve public --listen 8080 --no-clipboard
+Restart=on-failure
+RestartSec=5
+
+# 環境變數（npm global bin 路徑）
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=default.target
+EOF
+```
+
+> `%h` 是 systemd 的 home 目錄展開符號，等同 `$HOME`。
+
+---
+
+## 4. 啟動與管理
+
+```bash
+# 重新載入 daemon
+systemctl --user daemon-reload
+
+# 啟動服務
+systemctl --user start engineeringpaper
+
+# 開機自動啟動（需要 loginctl linger）
+systemctl --user enable engineeringpaper
+loginctl enable-linger $USER   # 讓登出後服務仍繼續跑
+
+# 查看狀態與 log
+systemctl --user status engineeringpaper
+journalctl --user -u engineeringpaper -f
+```
+
+開啟瀏覽器訪問 `http://localhost:8080`。
+
+---
+
+## 5. 更新版本
+
+```bash
+cd ~/EngineeringPaper.xyz
+git pull
+npm install          # 若 package.json 有變動
+npm run build
+
+systemctl --user restart engineeringpaper
+```
+
+---
+
+## 常見問題
+
+| 問題 | 原因 | 解法 |
+|------|------|------|
+| `npx: command not found` | PATH 在 systemd 環境中較精簡 | 改用絕對路徑，`which npx` 找出後寫死到 `ExecStart` |
+| WASM 無法載入（MIME 錯誤） | 某些伺服器不回傳 `application/wasm` | 改用 `caddy` 或 `nginx`（見下方） |
+| Pyodide 跨來源問題（SharedArrayBuffer）| 需要 COOP/COEP headers | 同下方 caddy 方案解決 |
+
+**改用 Caddy（建議）**：EngineeringPaper.xyz 的 Pyodide 需要 `Cross-Origin-Opener-Policy` 和 `Cross-Origin-Embedder-Policy` headers 才能啟用 `SharedArrayBuffer`。`serve` 預設不加這些 headers，改用 Caddy 更穩：
+
+```bash
+# 安裝 caddy（Ubuntu/Debian）
+sudo apt install caddy
+
+# 建立 Caddyfile
+cat > ~/EngineeringPaper.xyz/Caddyfile << 'EOF'
+:8080 {
+    root * public
+    file_server
+    header Cross-Origin-Opener-Policy "same-origin"
+    header Cross-Origin-Embedder-Policy "require-corp"
+    encode gzip
+}
+EOF
+```
+
+然後把 service 的 `ExecStart` 改為：
+
+```ini
+ExecStart=/usr/bin/caddy run --config %h/EngineeringPaper.xyz/Caddyfile
+```
+
+
 ## 維護這個 Fork
 
 建議保留 `origin` 與 `upstream` 兩個 remote：
