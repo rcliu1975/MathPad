@@ -3251,6 +3251,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
           <p>You can use the original shareable link instead.</p>
         {:else if modalInfo.state === "success"}
           <p>Save this link in order to be able to access or share this sheet.</p>
+          <p>URL length：{modalInfo.url.length} </p>
           <br>
           <div class="shareable-link">
             <label for="shareable-link" class="shareable-link-label">Link:</label>
