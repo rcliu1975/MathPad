@@ -9,7 +9,6 @@
   import ChartLine from "carbon-icons-svelte/lib/ChartLine.svelte";
   import IbmWatsonStudio from "carbon-icons-svelte/lib/IbmWatsonStudio.svelte";
   import ChartLineSmooth from "carbon-icons-svelte/lib/ChartLineSmooth.svelte";
-  import RainDrop from "carbon-icons-svelte/lib/RainDrop.svelte";
   import IconButton from './IconButton.svelte';
   import DataTable from "carbon-icons-svelte/lib/DataTable.svelte";
   import type { CellTypes } from "./cells/BaseCell";
@@ -209,15 +208,6 @@
       noTouch={!last}
     >
       <Code />
-    </IconButton>
-
-    <IconButton
-      title="Insert Fluid Properties Cell Here"
-      click={() => addCellWrapper('fluid', index)}
-      id={last ? "add-fluid-cell" : `add-fluid-cell-${index}`}
-      noTouch={!last}
-    >
-      <RainDrop />
     </IconButton>
 
     <IconButton 

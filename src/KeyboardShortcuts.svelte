@@ -124,10 +124,6 @@
       <td>Insert Code Cell</td>
     </tr>
     <tr>
-      <td class="first-column"><span class="key">{modifier}</span> + <span class="key">Enter</span> then <span class="key">9</span></td>
-      <td>Insert Fluid Properties Cell</td>
-    </tr>
-    <tr>
       <td class="first-column"><span class="key">{modifier}</span> + <span class="key">Enter</span> then <span class="key">0</span></td>
       <td>Insert Sheet</td>
     </tr>

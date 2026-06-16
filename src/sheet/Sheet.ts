@@ -29,7 +29,6 @@ export type Config = {
   customBaseUnits?: CustomBaseUnits; // some early sheets won't have this property
   simplifySymbolicExpressions?: boolean; // some early sheets won't have this property
   convertFloatsToFractions?: boolean; // some early sheets won't have this property
-  fluidConfig?: FluidConfig; // some early sheets won't have this property
 };
 
 type Notation = "auto" | "fixed" | "exponential" | "engineering";
@@ -51,28 +50,13 @@ export type NumberFormatOptions = {
   upperExp: number;
 };
 
-export type FluidConfig = {
-  fluid: string;
-  incompMixConc: number;
-  customMixture: {fluid: string, moleFraction: number}[];
-}
-
 export function getDefaultConfig(): Config {
   return {
     mathCellConfig: getDefaultMathCellConfig(),
     customBaseUnits: getDefaultBaseUnits(),
     simplifySymbolicExpressions: true,
-    convertFloatsToFractions: true,
-    fluidConfig: getDefaultFluidConfig()
+    convertFloatsToFractions: true
   };
-}
-
-export function getDefaultFluidConfig(): FluidConfig {
-  return {
-    fluid: "Water",
-    incompMixConc: 0.5,
-    customMixture: [{fluid: "R32", moleFraction: 0.697615}, {fluid: "R125", moleFraction: 0.302385}]
-  }
 }
 
 function getDefaultMathCellConfig(): MathCellConfig {
@@ -376,7 +360,6 @@ export function normalizeConfig(config: Config | undefined): Config {
   config.customBaseUnits = config.customBaseUnits ?? getDefaultBaseUnits(); // customBaseUnits may not exist
   config.simplifySymbolicExpressions = config.simplifySymbolicExpressions ?? true; // simplifySymboicExpressions may not exist
   config.convertFloatsToFractions = config.convertFloatsToFractions ?? true; // convertFloatsToFractions may not exist
-  config.fluidConfig = config.fluidConfig ?? getDefaultFluidConfig(); // fluidConfig may not exist
   config.mathCellConfig.disableCalculation = config.mathCellConfig.disableCalculation ?? defaultConfig.mathCellConfig.disableCalculation;
   config.mathCellConfig.showIntermediateResults = config.mathCellConfig.showIntermediateResults ?? false; // may not exist
   config.mathCellConfig.textColor = config.mathCellConfig.textColor ?? defaultConfig.mathCellConfig.textColor;

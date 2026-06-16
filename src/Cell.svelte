@@ -11,7 +11,6 @@
   import DataTableCellElement from "./DataTableCell.svelte";
   import PiecewiseCellElement from "./PiecewiseCell.svelte";
   import SystemCellElement from "./SystemCell.svelte";
-  import FluidCellElement from "./FluidCell.svelte";
   import CodeCellElement from "./CodeCell.svelte";
   import DeletedCellElement from "./DeletedCell.svelte";
   import InsertCellElement from "./InsertCell.svelte";
@@ -25,7 +24,6 @@
   import SystemCell from "./cells/SystemCell.svelte";
   import DeletedCell from "./cells/DeletedCell";
   import InsertCell from "./cells/InsertCell";
-  import FluidCell from "./cells/FluidCell.svelte";
   import CodeCell from "./cells/CodeCell.svelte";
 
   import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
@@ -74,7 +72,7 @@
   let cellElement: MathCellElement | DocumentationCellElement | PlotCellElement | 
                    TableCellElement | PiecewiseCellElement | 
                    SystemCellElement | DeletedCellElement | InsertCellElement |
-                   FluidCellElement | DataTableCellElement;
+                   DataTableCellElement | CodeCellElement;
 
   $effect( () => {
     if (!selected) {
@@ -305,16 +303,6 @@
         bind:this={cellElement}
         index={index}
         systemCell={cell}
-      />
-    {:else if cell instanceof FluidCell}
-      <FluidCellElement
-        {insertMathCellAfter}
-        {insertInsertCellAfter}
-        {mathCellChanged}
-        {triggerSaveNeeded}
-        bind:this={cellElement}
-        index={index}
-        fluidCell={cell}
       />
     {:else if cell instanceof CodeCell}
       <CodeCellElement

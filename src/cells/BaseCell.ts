@@ -1,12 +1,12 @@
 import type { Delta } from "quill";
-import type { MathCellConfig, FluidConfig, NumberFormatOptions } from "../sheet/Sheet";
+import type { MathCellConfig, NumberFormatOptions } from "../sheet/Sheet";
 
 export type CellTypes = "math" | "documentation" | "plot" | "table" | "piecewise" | "system" |
-                        "deleted" | "insert" | "fluid" | "dataTable" | "code";
+                        "deleted" | "insert" | "dataTable" | "code";
 
 export type DatabaseCell = DatabaseMathCell | DatabaseDocumentationCell |
                            DatabasePlotCell | DatabaseTableCell | DatabasePiecewiseCell | 
-                           DatabaseSystemCell | DatabaseFluidCell | DatabaseDataTableCell |
+                           DatabaseSystemCell | DatabaseDataTableCell |
                            DatabaseCodeCell;
 
 export type DatabaseMathCell = {
@@ -94,19 +94,6 @@ export type DatabaseSystemCell = {
   parameterListLatex: string,
   expressionLatexs: string[],
   selectedSolution: number
-}
-
-export type DatabaseFluidCell = {
-  type: "fluid",
-  id: number,
-  fluidConfig: FluidConfig,
-  useSheetFluid: boolean,
-  useFluidInName: boolean,
-  output: string,
-  input1: string,
-  input2: string,
-  input3: string,
-  latex: string,
 }
 
 export type DatabaseCodeCell = {
