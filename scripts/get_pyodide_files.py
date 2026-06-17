@@ -35,7 +35,6 @@ pyodide_info_file = script_dir / "../src/pyodide-info.json"
 # These are the high level packages that need to be exposed to EP and the user for code cells
 # All needed dependencies will be autmatically added
 seed_packages = [
-    "sympy",
     "numpy",
     "coolprop",
     "scipy",
@@ -54,7 +53,6 @@ packages_to_hide_from_ui = [
     "six",
     "pylab",
     "mpl_toolkits",
-    "isympy",
     "jedi"
 ]
 

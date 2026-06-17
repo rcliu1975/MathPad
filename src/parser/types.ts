@@ -55,7 +55,7 @@ export type ErrorStatement = {
 
 type ExpressionStatement = {
   type: "expression";
-  sympy: string;
+  expression: string;
 };
 
 type NumberStatement = {
@@ -71,7 +71,7 @@ type ParameterStatement = {
 
 type ConditionStatement = {
   type: "condition";
-  sympy: string;
+  expression: string;
 };
 
 export type LocalSubstitution = {
@@ -91,7 +91,7 @@ export type LocalSubstitutionRange = Omit<LocalSubstitution,"isRange"> & {
 type BaseAssignmentStatement = {
   type: "assignment";
   name: string;
-  sympy: string;
+  expression: string;
   params: string[];
   variableNameMap: Record<string, string>;
   isFunctionArgument: false;
@@ -116,7 +116,7 @@ export type UserFunctionRange = Omit<UserFunction, "isRange"> & {
 
 
 export type FunctionArgumentAssignment = Pick<BaseAssignmentStatement,
-                                              "type" | "name" | "sympy" |
+                                              "type" | "name" | "expression" |
                                               "params"> & {
   isFunctionArgument: true;
   isFunction: false;
@@ -164,7 +164,7 @@ export type EqualityStatement = Omit<AssignmentStatement, "type" | "name"> & {
 
 type BaseQueryStatement = {
   type: "query";
-  sympy: string;
+  expression: string;
   implicitParams: ImplicitParameter[];
   params: string[];
   variableNameMap: Record<string, string>;
@@ -294,7 +294,7 @@ export type CodeFunctionRawQuery = BaseQueryStatement & {
   isCodeFunctionRawQuery: true;
 }
 
-export type FunctionArgumentQuery = Pick<BaseQueryStatement, "type" | "sympy" | "params" > & {
+export type FunctionArgumentQuery = Pick<BaseQueryStatement, "type" | "expression" | "params" > & {
   name: string;
   isFunctionArgument: true;
   isFunction: false;
@@ -305,7 +305,7 @@ export type FunctionArgumentQuery = Pick<BaseQueryStatement, "type" | "sympy" | 
   isCodeFunctionRawQuery: false;
 };
 
-export type FunctionUnitsQuery = Pick<BaseQueryStatement, "type" | "sympy" | "params" > & {
+export type FunctionUnitsQuery = Pick<BaseQueryStatement, "type" | "expression" | "params" > & {
   units: '';
   isFunctionArgument: false;
   isFunction: false;

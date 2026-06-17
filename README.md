@@ -14,7 +14,7 @@ MathPad 是從 [engineeringpaper.xyz](https://engineeringpaper.xyz) / [mgreminge
 ## 專案概要
 
 - 前端技術: Svelte 5 + Vite 7
-- 計算核心: Pyodide、SymPy
+- 計算核心: Pyodide、NumPy / SciPy
 - 本機預覽與測試環境: Wrangler Pages
 - 端對端測試: Playwright
 
@@ -288,7 +288,6 @@ git log --oneline HEAD..upstream/main
 MathPad 繼承了 EngineeringPaper.xyz 的主要能力與依賴組合，包含：
 
 - [Pyodide](https://pyodide.org)
-- [SymPy](https://www.sympy.org)
 - [MathLive](https://cortexjs.io/mathlive/)
 - [Plotly](https://plotly.com/)
 - [Quill](https://quilljs.com/)

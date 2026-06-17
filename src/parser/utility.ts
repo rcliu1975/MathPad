@@ -144,7 +144,7 @@ export function createSubQuery(name: string): SubQueryStatement {
     isScatterYValuesQueryStatement: false,
     isFromPlotCell: false,
     isSubQuery: true,
-    sympy: name,
+    expression: name,
     isRange: false,
     isDataTableQuery: false,
     isCodeFunctionQuery: false,

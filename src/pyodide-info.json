@@ -6,10 +6,6 @@
       "pythonVersion": "3.12.7",
       "pyodideVersion": "0.27.7",
       "availablePackages": {
-        "sympy": {
-          "pyodideName": "sympy",
-          "version": "1.13.3"
-        },
         "numpy": {
           "pyodideName": "numpy",
           "version": "2.0.2"
@@ -64,10 +60,6 @@
       "pythonVersion": "3.13.2",
       "pyodideVersion": "0.29.3",
       "availablePackages": {
-        "sympy": {
-          "pyodideName": "sympy",
-          "version": "1.13.3"
-        },
         "numpy": {
           "pyodideName": "numpy",
           "version": "2.2.5"

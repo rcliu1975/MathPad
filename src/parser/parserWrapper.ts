@@ -1,5 +1,5 @@
 import type { FieldTypes, DataTableInfo } from "./types";
-import type { ParsingResult } from "./LatexToSympy";
+import type { ParsingResult } from "./LatexToExpression";
 
 type ParseRequest = {
   latex: string,

@@ -48,7 +48,6 @@
     SkipToContent,
     HeaderUtilities,
     HeaderGlobalAction,
-    Checkbox,
     Content,
     SideNav,
     SideNavMenuItem,
@@ -854,8 +853,8 @@
           if ((cell.config && cell.config.showIntermediateResults) || 
               appState.config.mathCellConfig.showIntermediateResults) {
             if ("subQueries" in cell.mathField.statement) {
-              for (const subQuery of cell.mathField.statement.subQueries) {
-                subQueries.set(subQuery.sympy, subQuery);
+              for (const subQueryDefinition of cell.mathField.statement.subQueries) {
+                subQueries.set(subQueryDefinition.expression, subQueryDefinition);
               }
             }
           }
@@ -937,9 +936,7 @@
       systemDefinitions: systemDefinitions,
       codeCellFunctions: codeCellFunctions,
       interpolationFunctions: interpolationFunctions,
-      customBaseUnits: appState.config.customBaseUnits,
-      simplifySymbolicExpressions: appState.config.simplifySymbolicExpressions,
-      convertFloatsToFractions: appState.config.convertFloatsToFractions
+      customBaseUnits: appState.config.customBaseUnits
     };
   }
 
@@ -3132,9 +3129,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
         on:click:button--primary={() => modalInfo.modalOpen = false}
         on:click:button--secondary={() => {mathCellConfigDialog?.resetDefaults();
                                            baseUnitsConfigDialog?.resetDefaults();
-                                           numberFormatOptionsDialog?.resetDefaults();
-                                           appState.config.simplifySymbolicExpressions = true;
-                                           appState.config.convertFloatsToFractions = true;}}
+                                           numberFormatOptionsDialog?.resetDefaults();}}
         bind:open={modalInfo.modalOpen}
         preventCloseOnClickOutside={true}
       >
@@ -3161,16 +3156,6 @@ Please include a link to this sheet in the email to assist in debugging the prob
             <Tab label="Set User Default" />
             <svelte:fragment slot="content">
               <TabContent>
-                <Checkbox 
-                  labelText="Automatically Simplify Symbolic Expressions (unchecking may speed up sheet updates)"
-                  bind:checked={appState.config.simplifySymbolicExpressions}
-                  on:check={() => {triggerSaveNeeded(); mathCellChanged();}}
-                />
-                <Checkbox 
-                  labelText="Preserve Symbolic Representation of Numbers (increases precision for decimal numbers, unchecking may speed up sheet updates)"
-                  bind:checked={appState.config.convertFloatsToFractions}
-                  on:check={() => {triggerSaveNeeded(); mathCellChanged();}}
-                />
                 <MathCellConfigDialog
                   bind:this={mathCellConfigDialog}
                   bind:mathCellConfig={appState.config.mathCellConfig}

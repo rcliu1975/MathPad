@@ -101,8 +101,7 @@ export type DatabaseCodeCell = {
   id: number,
   nextFuncId: number,
   latex: string,
-  code: string,
-  sympyMode : boolean
+  code: string
 }
 
 export abstract class BaseCell {

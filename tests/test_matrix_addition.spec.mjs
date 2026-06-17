@@ -172,8 +172,8 @@ test('Addition with two variable matrices', async () => {
 });
 
 test('Addition scalar and variable matrix', async () => {
-  // Ideally would generate an error, however sympy generates a symbolic result
-  // sympy won't generate a numerical result so it will be clear to the user what is happening
+  // Ideally would generate an error, however the evaluator returns a symbolic result
+  // it won't generate a numerical result so it will be clear to the user what is happening
   await page.setLatex(0, String.raw`1+A=`);
   
   await page.locator('#add-math-cell').click();
@@ -186,8 +186,8 @@ test('Addition scalar and variable matrix', async () => {
 });
 
 test('Addition scalar and literal matrix', async () => {
-  // Ideally would generate an error, however sympy generates a symbolic result
-  // sympy won't generate a numerical result so it will be clear to the user what is happening
+  // Ideally would generate an error, however the evaluator returns a symbolic result
+  // it won't generate a numerical result so it will be clear to the user what is happening
   await page.setLatex(0, String.raw`1+\begin{bmatrix}1 & 2\\ 3 & 4\end{bmatrix}=`);
 
   await page.waitForSelector('text=Updating...', {state: 'detached'});

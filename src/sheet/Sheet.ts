@@ -27,8 +27,6 @@ export type InsertedSheet = {
 export type Config = {
   mathCellConfig: MathCellConfig;
   customBaseUnits?: CustomBaseUnits; // some early sheets won't have this property
-  simplifySymbolicExpressions?: boolean; // some early sheets won't have this property
-  convertFloatsToFractions?: boolean; // some early sheets won't have this property
 };
 
 type Notation = "auto" | "fixed" | "exponential" | "engineering";
@@ -53,9 +51,7 @@ export type NumberFormatOptions = {
 export function getDefaultConfig(): Config {
   return {
     mathCellConfig: getDefaultMathCellConfig(),
-    customBaseUnits: getDefaultBaseUnits(),
-    simplifySymbolicExpressions: true,
-    convertFloatsToFractions: true
+    customBaseUnits: getDefaultBaseUnits()
   };
 }
 
@@ -123,9 +119,7 @@ export function isDefaultConfig(config: Config): boolean {
 
 export function configsEqual(config1: Config, config2: Config): boolean {
   return mathConfigsEqual(config1.mathCellConfig, config2.mathCellConfig) && 
-         baseUnitsEqual(config1.customBaseUnits, config2.customBaseUnits) &&
-         config1.simplifySymbolicExpressions === config2.simplifySymbolicExpressions && 
-         config1.convertFloatsToFractions === config2.convertFloatsToFractions;
+         baseUnitsEqual(config1.customBaseUnits, config2.customBaseUnits);
 }
 
 export function copyMathConfig(input: MathCellConfig): MathCellConfig {
@@ -358,8 +352,6 @@ export function normalizeConfig(config: Config | undefined): Config {
   }
   
   config.customBaseUnits = config.customBaseUnits ?? getDefaultBaseUnits(); // customBaseUnits may not exist
-  config.simplifySymbolicExpressions = config.simplifySymbolicExpressions ?? true; // simplifySymboicExpressions may not exist
-  config.convertFloatsToFractions = config.convertFloatsToFractions ?? true; // convertFloatsToFractions may not exist
   config.mathCellConfig.disableCalculation = config.mathCellConfig.disableCalculation ?? defaultConfig.mathCellConfig.disableCalculation;
   config.mathCellConfig.showIntermediateResults = config.mathCellConfig.showIntermediateResults ?? false; // may not exist
   config.mathCellConfig.textColor = config.mathCellConfig.textColor ?? defaultConfig.mathCellConfig.textColor;

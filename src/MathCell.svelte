@@ -395,9 +395,9 @@
 
     const replacements: Replacement[] = [];
 
-    for (const [sympyVar, replacement] of subQueryReplacements) {
-      if (subResults.has(sympyVar)) {
-        const currentResultLatex = getLatexResult(createSubQuery(sympyVar), subResults.get(sympyVar), numberConfig);
+    for (const [subQueryName, replacement] of subQueryReplacements) {
+      if (subResults.has(subQueryName)) {
+        const currentResultLatex = getLatexResult(createSubQuery(subQueryName), subResults.get(subQueryName), numberConfig);
         let newLatex: string;
         if (currentResultLatex.error) {
           newLatex = String.raw`\text{${currentResultLatex.error.startsWith("Dimension Error:") ? "Dimension Error" : currentResultLatex.error}}`;

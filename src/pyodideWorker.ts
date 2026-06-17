@@ -8,12 +8,30 @@ let pyodide_ready = false;
 let py_funcs;
 let recursionError = false;
 let pyodide;
-let loadedPyodidePackages: Set<string> = new Set(['sympy']);
+let loadedPyodidePackages: Set<string> = new Set(['numpy', 'scipy']);
+
+function difference<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set<T>();
+  for (const value of a) {
+    if (!b.has(value)) {
+      result.add(value);
+    }
+  }
+  return result;
+}
+
+function union<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set<T>(a);
+  for (const value of b) {
+    result.add(value);
+  }
+  return result;
+}
 
 async function setup() { 
   try {
-    pyodide = await globalThis.loadPyodide({indexURL: 'pyodide/', packages: ['sympy']});
-    const response = await fetch("dimensional_analysis.py");
+    pyodide = await globalThis.loadPyodide({indexURL: 'pyodide/', packages: ['numpy', 'scipy']});
+    const response = await fetch("numeric_analysis.py");
     const data = await response.text();
     py_funcs = await pyodide.runPythonAsync(data);
     console.log('Python Ready');
@@ -41,10 +59,10 @@ globalThis.onmessage = async function(e){
       return;
     }
     try {
-      const neededPackages = (new Set(e.data.neededPyodidePackages as string[])).difference(loadedPyodidePackages)
+      const neededPackages = difference(new Set(e.data.neededPyodidePackages as string[]), loadedPyodidePackages);
       if (neededPackages.size > 0) {
         await pyodide.loadPackage([...neededPackages]);
-        loadedPyodidePackages = loadedPyodidePackages.union(neededPackages);
+        loadedPyodidePackages = union(loadedPyodidePackages, neededPackages);
       }
 
       const statementsAndSystems = JSON.stringify(e.data.data);

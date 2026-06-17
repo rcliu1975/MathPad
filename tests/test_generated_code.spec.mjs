@@ -348,7 +348,7 @@ test('Codegen button appears only when appropriate', async () => {
   await expect(page.locator('#code-gen-1')).toBeVisible();
 });
 
-test('Numpy function rewrite fix, sympy #25514', async () => {
+test('Numpy function rewrite fix, regression #25514', async () => {
   await page.setLatex(0, String.raw`y=\sec\left(x\right)^2`);
 
   await page.locator('#add-math-cell').click()
@@ -423,4 +423,3 @@ test('Variable name rewriting', async () => {
 
   await page.keyboard.press('Escape');
 });
-

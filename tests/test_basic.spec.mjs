@@ -453,7 +453,7 @@ test('Test basic functionality', async () => {
   await page.forceDeleteCell(0);
   await page.forceDeleteCell(0);
 
-  // test divide by zero with substitution (related to sympy issue #21076)
+  // test divide by zero with substitution (related to a legacy evaluator issue #21076)
   await page.click('#add-math-cell');
   await page.type(':nth-match(math-field.editable, 1)', '1[meter]/0[foot]');
   await page.press(':nth-match(math-field.editable, 1)', 'ArrowRight');
@@ -609,7 +609,7 @@ test('Test basic functionality', async () => {
     await page.forceDeleteCell(0);
   }
 
-  // make sure that SymPy reserved names get renamed
+  // make sure that reserved names get renamed
   await page.click('#add-math-cell');
   await page.type(':nth-match(math-field.editable, 1)', 'Expr=');
   await page.click('#add-math-cell');

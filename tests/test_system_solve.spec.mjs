@@ -384,7 +384,7 @@ test('Test system with 5 equations', async () => {
 });
 
 
-test('Test restarting pyodide on a calculation that has caused sympy to hang', async () => {
+test('Test restarting pyodide on a calculation that has caused the evaluator to hang', async () => {
 
   await page.locator('#add-system-cell').click();
   await expect(page.locator('#system-expression-1-0 math-field.editable')).toBeVisible();
@@ -1099,7 +1099,7 @@ test('Test exponent with units', async () => {
   await expect(page.locator('#cell-1 >> text=Dimension Error')).toBeVisible();
 
   // Technically this shouldn't be a dimension error. However, without the placeholder functions
-  // raw sympy is unable to cancel exponent units
+  // the raw evaluator is unable to cancel exponent units
   await expect(page.locator('#cell-2 >> text=Dimension Error')).toBeVisible();
 
   let content = await page.textContent('#result-value-3');

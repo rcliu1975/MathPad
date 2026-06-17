@@ -1,4 +1,4 @@
-import { parseLatex } from "./LatexToSympy";
+import { parseLatex } from "./LatexToExpression";
 import { createCustomUnits } from "../utility";
 
 createCustomUnits();

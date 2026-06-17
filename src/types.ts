@@ -53,6 +53,4 @@ export type StatementsAndSystems = {
   codeCellFunctions: CodeCellFunction[];
   interpolationFunctions: (InterpolationFunction | GridInterpolationFunction)[];
   customBaseUnits?: CustomBaseUnits;
-  simplifySymbolicExpressions: boolean;
-  convertFloatsToFractions: boolean;
 }

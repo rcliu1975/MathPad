@@ -44,7 +44,6 @@ export type CodeCellFunction = {
   code: string,
   inputDims: CodeCellInputOutputDims[],
   outputDims: CodeCellInputOutputDims,
-  sympyMode: boolean,
   neededPyodidePackages: string[]
 }
 
@@ -57,22 +56,19 @@ export default class CodeCell extends BaseCell {
 
   static nextFuncId = 1;
   code: string;
-  sympyMode: boolean = $state();
   mathField: MathField = $state();
-  neededPyodidePackages: Set<string> = new Set(['numpy']);
+  neededPyodidePackages: Set<string> = new Set(['numpy', 'scipy']);
 
   constructor (arg?: DatabaseCodeCell) {
     super("code", arg?.id);
     if (arg === undefined) {
       this.code = this.getInitialCode();
-      this.sympyMode = false;
       this.mathField = new MathField(this.getInitialLatex(), "code_func_def");
     } else {
       if (arg.nextFuncId > CodeCell.nextFuncId) {
         CodeCell.nextFuncId = arg.nextFuncId;
       }
       this.code = arg.code;
-      this.sympyMode = arg.sympyMode;
       this.mathField = new MathField(arg.latex, "code_func_def");
     }
   }
@@ -120,8 +116,7 @@ export default class CodeCell extends BaseCell {
       id: this.id,
       nextFuncId: CodeCell.nextFuncId,
       latex: this.mathField.latex,
-      code: this.code,
-      sympyMode: this.sympyMode
+      code: this.code
     };
   }
 
@@ -151,7 +146,6 @@ export default class CodeCell extends BaseCell {
         code: this.code,
         inputDims: this.mathField.statement.inputDims,
         outputDims: this.mathField.statement.outputDims,
-        sympyMode: this.sympyMode,
         neededPyodidePackages: [...this.neededPyodidePackages]
       }
     } else {
@@ -164,6 +158,7 @@ export default class CodeCell extends BaseCell {
     const pyodideNames = packageMatches.map(key => currentPyodideInfo.availablePackages[key].pyodideName);
     this.neededPyodidePackages = new Set(pyodideNames);
     this.neededPyodidePackages.add('numpy');
+    this.neededPyodidePackages.add('scipy');
   }
 
 }

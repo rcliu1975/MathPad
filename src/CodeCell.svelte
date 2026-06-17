@@ -189,15 +189,6 @@
   </div>
   
   <div class="row">
-    <input
-      id={`use-sympy-mode-${index}`}
-      type="checkbox"
-      bind:checked={codeCell.sympyMode}
-      onchange={handleUpdate}
-    />
-    <label for={`use-sympy-mode-${index}`}>
-      Use SymPy Mode
-    </label>
     <div class="info">
       <TooltipIcon direction="left">
         <div class="tooltip" slot="tooltipText">

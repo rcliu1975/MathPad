@@ -6,6 +6,24 @@ let py_funcs;
 let pyodide;
 let loadedPyodidePackages: Set<string> = new Set(['jedi']);
 
+function difference<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set<T>();
+  for (const value of a) {
+    if (!b.has(value)) {
+      result.add(value);
+    }
+  }
+  return result;
+}
+
+function union<T>(a: Set<T>, b: Set<T>): Set<T> {
+  const result = new Set<T>(a);
+  for (const value of b) {
+    result.add(value);
+  }
+  return result;
+}
+
 async function setup() { 
   try {
     pyodide = await globalThis.loadPyodide({indexURL: 'pyodide/', packages: ['jedi']});
@@ -31,10 +49,10 @@ globalThis.onmessage = async function(e){
     }
 
     try {
-      const neededPackages = (new Set(e.data.neededPyodidePackages as string[])).difference(loadedPyodidePackages)
+      const neededPackages = difference(new Set(e.data.neededPyodidePackages as string[]), loadedPyodidePackages);
       if (neededPackages.size > 0) {
         await pyodide.loadPackage([...neededPackages]);
-        loadedPyodidePackages = loadedPyodidePackages.union(neededPackages);
+        loadedPyodidePackages = union(loadedPyodidePackages, neededPackages);
       }
 
       const codeContextResult = JSON.parse(py_funcs.get_code_context(JSON.stringify(e.data.codeContextRequest)));
