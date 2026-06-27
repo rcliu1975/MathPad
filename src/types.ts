@@ -1,5 +1,6 @@
 import type MathCell from "./cells/MathCell.svelte";
 import type { SystemDefinition } from "./cells/SystemCell.svelte";
+import type { FluidFunction } from "./cells/FluidCell.svelte";
 import type { CodeCellFunction } from "./cells/CodeCell.svelte";
 import type { Statement, SubQueryStatement } from "./parser/types";
 import type { MathField } from "./cells/MathField.svelte";
@@ -50,6 +51,7 @@ export type RecentSheets = Map<string, RecentSheetUrl | RecentSheetFile>;
 export type StatementsAndSystems = {
   statements: (Statement | SubQueryStatement)[];
   systemDefinitions: SystemDefinition[];
+  fluidFunctions: FluidFunction[];
   codeCellFunctions: CodeCellFunction[];
   interpolationFunctions: (InterpolationFunction | GridInterpolationFunction)[];
   customBaseUnits?: CustomBaseUnits;

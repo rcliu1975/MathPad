@@ -11,6 +11,7 @@ import DataTableCell from './cells/DataTableCell.svelte';
 import type {MathField} from './cells/MathField.svelte';
 import PiecewiseCell from './cells/PiecewiseCell.svelte';
 import SystemCell from './cells/SystemCell.svelte';
+import FluidCell from './cells/FluidCell.svelte';
 import CodeCell from './cells/CodeCell.svelte';
 import PlotCell from './cells/PlotCell.svelte';
 import DeletedCellClass from "./cells/DeletedCell";
@@ -108,7 +109,7 @@ export async function addCell(type: CellTypes, index?: number) {
   }
 
   let newCell: TableCell | MathCell | DocumentationCell | PiecewiseCell | SystemCell |
-               PlotCell | InsertCell | DataTableCell | CodeCell;
+               PlotCell | InsertCell | FluidCell | DataTableCell;
 
   if (type === "math") {
     newCell = new MathCell;
@@ -128,6 +129,9 @@ export async function addCell(type: CellTypes, index?: number) {
     newCell = new PlotCell;
   } else if (type === "insert") {
     newCell = new InsertCell;
+  } else if (type === "fluid") {
+    await FluidCell.init();
+    newCell = new FluidCell(appState.config.fluidConfig);
   } else if (type === "code") {
     await CodeCell.init();
     newCell = new CodeCell();

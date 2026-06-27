@@ -974,6 +974,43 @@ test('Test csv export and reload', async () => {
 
 });
 
+test('Test fluid function in data table', async () => {
+  await page.setLatex(0, String.raw`\rho_{3,1}=`);
+
+  await page.locator('#add-data-table-cell').click();
+
+  await expect(page.locator('#data-table-input-1-0-0')).toBeFocused();
+
+  await page.keyboard.type('.1');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('1');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('1.1');
+
+  await page.locator('#parameter-units-1-0 >> math-field').type('[atm]');
+
+  await page.setLatex(1, String.raw`P`, 0);
+  await page.setLatex(1, String.raw`\rho=\mathrm{WaterDGivenTP}\left(20\left\lbrack degC\right\rbrack,P\right)`, 1);
+
+  await page.locator('#add-fluid-cell').click();
+
+  await page.waitForSelector('text=Updating...', {state: 'detached'});
+
+  let content = await page.textContent('#result-value-0');
+  expect(parseLatexFloat(content)).toBeCloseTo(998.2117920164021, 12);
+  content = await page.textContent('#result-units-0');
+  expect(content).toBe('kg^1*m^-3');
+
+  content = await page.textContent('#grid-cell-1-0-1');
+  expect(parseFloat(content)).toBeCloseTo(998.16537204293, precision);
+
+  content = await page.textContent('#grid-cell-1-1-1');
+  expect(parseFloat(content)).toBeCloseTo(998.207150467928, precision);
+
+  content = await page.textContent('#grid-cell-1-2-1');
+  expect(parseFloat(content)).toBeCloseTo(998.211792016402, precision);
+});
+
 test('Test with function that has custom units function (max)', async () => {
   await page.setLatex(0, String.raw`Col3_{2,1}=`);
 

@@ -9,6 +9,7 @@
   import PlotCell from "./cells/PlotCell.svelte";
   import PiecewiseCell from "./cells/PiecewiseCell.svelte";
   import SystemCell from "./cells/SystemCell.svelte";
+  import FluidCell from "./cells/FluidCell.svelte";
   import CodeCell from "./cells/CodeCell.svelte";
   import appState from "./stores.svelte";
   import { deleteCell, addCell, incrementActiveCell, decrementActiveCell,
@@ -16,6 +17,7 @@
   import { isDefaultConfig, type Config, normalizeConfig, type MathCellConfig, type Sheet, getDefaultConfig} from "./sheet/Sheet";
   import type { Statement, SubQueryStatement } from "./parser/types";
   import type { SystemDefinition } from "./cells/SystemCell.svelte";
+  import type { FluidFunction } from "./cells/FluidCell.svelte";
   import type { CodeCellFunction } from "./cells/CodeCell.svelte";
   import { isVisible, debounce, saveFileBlob, sleep, createCustomUnits, checkPyodideRuntime } from "./utility";
   import type { ModalInfo, RecentSheets, RecentSheetUrl, RecentSheetFile, StatementsAndSystems } from "./types";
@@ -840,6 +842,7 @@
     const endStatements: (Statement | SubQueryStatement)[] = [];
     const subQueries: Map<string,SubQueryStatement> = new Map();
     const systemDefinitions: SystemDefinition[] = [];
+    const fluidFunctions: FluidFunction[] = [];
     const codeCellFunctions: CodeCellFunction[] = [];
     const interpolationFunctions: (InterpolationFunction | GridInterpolationFunction)[] = [];
 
@@ -923,6 +926,14 @@
         if (codeCellFunction) {
           codeCellFunctions.push(codeCellFunction);
         }
+      } else if (cell instanceof FluidCell) {
+        const {fluidFunction, statement} = cell.getFluidFunction(appState.config.fluidConfig);
+        if (fluidFunction) {
+          fluidFunctions.push(fluidFunction);
+          if (statement) {
+            endStatements.push(statement);
+          }
+        }
       }
     }
 
@@ -935,6 +946,7 @@
     return {
       statements: statements,
       systemDefinitions: systemDefinitions,
+      fluidFunctions: fluidFunctions,
       codeCellFunctions: codeCellFunctions,
       interpolationFunctions: interpolationFunctions,
       customBaseUnits: appState.config.customBaseUnits,
@@ -966,6 +978,8 @@
     } else if (cell instanceof SystemCell) {
       return accum || cell.parameterListField.parsingError || 
                      cell.expressionFields.some(value => value.parsingError);
+    } else if (cell instanceof FluidCell) {
+      return accum || cell.error;
     } else if (cell instanceof CodeCell) {
       return accum || cell.mathField.parsingError;
     } else if (cell instanceof DataTableCell) {
@@ -1000,6 +1014,9 @@
       }
 
       let neededPyodidePackages: Set<string> = new Set();
+      if (statementsAndSystemsObject.fluidFunctions.length > 0) {
+        neededPyodidePackages.add('coolprop');
+      }
       if (statementsAndSystemsObject.interpolationFunctions.length > 0) {
         neededPyodidePackages.add('numpy');
       }
@@ -1375,18 +1392,7 @@ Please include a link to this sheet in the email to assist in debugging the prob
       appState.insertedSheets = sheet.insertedSheets ?? [];
       appState.config = normalizeConfig(sheet.config);
 
-      const loadedCells: Cell[] = [];
-      const loadedCellIndexes: number[] = [];
-      for (const [cellIndex, value] of sheet.cells.entries()) {
-        const loadedCell = await cellFactory(value, appState.config);
-        if (loadedCell) {
-          loadedCells.push(loadedCell);
-          loadedCellIndexes.push(cellIndex);
-        }
-      }
-      appState.cells = loadedCells;
-      const loadedResults = loadedCellIndexes.map((cellIndex) => sheet.results?.[cellIndex] ?? null);
-      const loadedSystemResults = loadedCellIndexes.map((cellIndex) => sheet.system_results?.[cellIndex] ?? null);
+      appState.cells = await Promise.all(sheet.cells.map((value) => cellFactory(value, appState.config)));
 
       if (!appState.history.map(item => item.hash !== "file" ? getSheetHash(new URL(item.url)) : "").includes(getSheetHash(window.location))) {
         appState.history = requestHistory;
@@ -1405,10 +1411,10 @@ Please include a link to this sheet in the email to assist in debugging the prob
 
       if (noParsingErrors) {
         if (appState.results.length === 0) { // only set results if results haven't already been recalculated
-          appState.results = loadedResults;
+          appState.results = sheet.results;
           appState.resultsInvalid = false;
           // old documents in the database won't have the system_results, sub_results, or codeCellResults properties
-          appState.system_results = loadedSystemResults;
+          appState.system_results = sheet.system_results ? sheet.system_results : [];
           appState.sub_results = sheet.sub_results ? new Map(sheet.sub_results) : new Map();
           appState.codeCellResults = sheet.codeCellResults ? sheet.codeCellResults : {};
         }
@@ -1852,20 +1858,14 @@ Please include a link to this sheet in the email to assist in debugging the prob
       clearResults();
       appState.resultsInvalid = true;
 
-      const insertedCells: NonNullable<Awaited<ReturnType<typeof cellFactory>>>[] = [];
-      for (const value of sheet.cells) {
-        const newCell = await cellFactory(value, appState.config);
-        if (newCell) {
-          insertedCells.push(newCell);
-        }
-      }
+      const newCells = await Promise.all(sheet.cells.map((value) => cellFactory(value, appState.config)));
 
       // need to make sure cell id's don't collide
-      for (const cell of insertedCells) {
+      for (const cell of newCells) {
         cell.id = BaseCell.nextId++;
       }
 
-      appState.cells = [...appState.cells.slice(0, index), ...insertedCells, ...appState.cells.slice(index)]
+      appState.cells = [...appState.cells.slice(0, index), ...newCells, ...appState.cells.slice(index)]
 
       await tick();
     } catch(error) {
