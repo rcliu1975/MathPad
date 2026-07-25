@@ -296,3 +296,12 @@ MathPad 繼承了 EngineeringPaper.xyz 的主要能力與依賴組合，包含�
 - [ANTLR](https://www.antlr.org/)
 
 如果你要了解原始產品設計、功能取向或對外使用情境，請回到上游專案與官方網站文件。
+
+## Todo
+
+1. 文字的 cell 加上 上標， 下標的功能
+
+2. 試試看如果不需要 符號運算， 是否可以簡化 SymPy
+
+
+
