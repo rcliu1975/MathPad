@@ -9,7 +9,7 @@ MathPad 是從 [engineeringpaper.xyz](https://engineeringpaper.xyz) / [mgreminge
 - 教學影片: [tutorial video](https://youtu.be/r7EZQVhcr5Q)
 - 延伸說明: [learning EngineeringPaper.xyz](https://blog.engineeringpaper.xyz/engineeringpaperxyz-tutorial)
 
-本 README 主要整理 `MathPad` 的開發、維護、執行與同步上游版本所需資訊。
+本 README 主要整理 `MathPad` 的開發、建置、測試與部署資訊。
 
 ## 專案概要
 
@@ -50,7 +50,7 @@ npm run dev
 MATHPAD_ALLOWED_HOSTS=your-dev-host.example.com
 ```
 
-可參考 [`.env.example`](/home/roger/WorkSpace/MathPad/.env.example:1)。
+可參考 [`.env.example`](.env.example)。
 
 ## 建置與預覽
 
@@ -109,147 +109,153 @@ npm run test
 
 ---
 
-# 用 user mode systemd 跑 MathPad 的步驟
+# 手動部署 MathPad
 
-根據 README 確認：`npm run build` 完成後，`public/` 資料夾的內容可以作為靜態網站部署到任意 web server。 流程如下：
+`npm run build` 完成後，部署目標是 `dist/` 目錄。你可以把 `dist/` 的內容上傳到任何靜態網站主機、雲端儲存空間，或自己的 web server。
 
----
-
-## 1. 前置需求
+## 1. 建置
 
 ```bash
-# 確認 Node.js ≥ 18、git
-node -v
-git --version
-
-# 安裝 serve（靜態檔案伺服器）
-npm install -g serve
-```
-
----
-
-## 2. Clone 並建置
-
-```bash
-git clone https://github.com/mgreminger/EngineeringPaper.xyz.git
-cd EngineeringPaper.xyz
-
 npm install
 npm run build
-# 產出目錄：./public/
 ```
 
-建置完成後確認：
+建置完成後確認 `dist/` 存在：
 
 ```bash
-ls public/   # 應看到 index.html、_app/、sw.js 等
+ls dist
 ```
 
----
+## 2. 本機驗證
 
-## 3. 建立 user-mode systemd service
+先用靜態伺服器確認 build 結果可正常載入：
 
 ```bash
-# 確保 user systemd 目錄存在
-mkdir -p ~/.config/systemd/user
+npx serve dist
 ```
 
-建立 service 檔，**路徑請依實際調整**：
+或：
 
 ```bash
-cat > ~/.config/systemd/user/engineeringpaper.service << 'EOF'
-[Unit]
-Description=EngineeringPaper.xyz static site
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=%h/EngineeringPaper.xyz
-ExecStart=/usr/bin/env npx serve public --listen 8080 --no-clipboard
-Restart=on-failure
-RestartSec=5
-
-# 環境變數（npm global bin 路徑）
-Environment=PATH=/usr/local/bin:/usr/bin:/bin
-
-[Install]
-WantedBy=default.target
-EOF
+python3 -m http.server 8080 --directory dist
 ```
 
-> `%h` 是 systemd 的 home 目錄展開符號，等同 `$HOME`。
+打開 `http://localhost:8080` 檢查畫面與功能。
 
----
+## 3. 上傳到正式環境
 
-## 4. 啟動與管理
+把 `dist/` 內的檔案複製到你的網站根目錄，例如：
 
 ```bash
-# 重新載入 daemon
-systemctl --user daemon-reload
-
-# 啟動服務
-systemctl --user start engineeringpaper
-
-# 開機自動啟動（需要 loginctl linger）
-systemctl --user enable engineeringpaper
-loginctl enable-linger $USER   # 讓登出後服務仍繼續跑
-
-# 查看狀態與 log
-systemctl --user status engineeringpaper
-journalctl --user -u engineeringpaper -f
+rsync -av --delete dist/ user@your-host:/var/www/mathpad/
 ```
 
-開啟瀏覽器訪問 `http://localhost:8080`。
+如果你用的是靜態主機，通常就是把 `dist/` 全部上傳，然後把站點 root 指到該目錄。
 
----
+## 4. 部署後檢查
+
+部署完成後先確認：
+
+- `index.html` 是網站入口
+- 靜態資源能正常回傳
+- `application/wasm` 類型有被正確送出
+- 如果 Pyodide 相關功能出問題，再確認伺服器是否需要補 `Cross-Origin-Opener-Policy` 和 `Cross-Origin-Embedder-Policy` headers
 
 ## 5. 更新版本
 
-```bash
-cd ~/EngineeringPaper.xyz
-git pull
-npm install          # 若 package.json 有變動
-npm run build
+之後要更新時，重跑一次建置並把新的 `dist/` 上傳：
 
-systemctl --user restart engineeringpaper
+```bash
+git pull
+npm install
+npm run build
+rsync -av --delete dist/ user@your-host:/var/www/mathpad/
 ```
 
 ---
 
-## 常見問題
+# Web UI 使用方式
 
-| 問題 | 原因 | 解法 |
-|------|------|------|
-| `npx: command not found` | PATH 在 systemd 環境中較精簡 | 改用絕對路徑，`which npx` 找出後寫死到 `ExecStart` |
-| WASM 無法載入（MIME 錯誤） | 某些伺服器不回傳 `application/wasm` | 改用 `caddy` 或 `nginx`（見下方） |
-| Pyodide 跨來源問題（SharedArrayBuffer）| 需要 COOP/COEP headers | 同下方 caddy 方案解決 |
-
-**改用 Caddy（建議）**：EngineeringPaper.xyz 的 Pyodide 需要 `Cross-Origin-Opener-Policy` 和 `Cross-Origin-Embedder-Policy` headers 才能啟用 `SharedArrayBuffer`。`serve` 預設不加這些 headers，改用 Caddy 更穩：
+建議用本機 HTTP server 開啟。
 
 ```bash
-# 安裝 caddy（Ubuntu/Debian）
-sudo apt install caddy
-
-# 建立 Caddyfile
-cat > ~/EngineeringPaper.xyz/Caddyfile << 'EOF'
-:8080 {
-    root * public
-    file_server
-    header Cross-Origin-Opener-Policy "same-origin"
-    header Cross-Origin-Embedder-Policy "require-corp"
-    encode gzip
-}
-EOF
+cd MathPad
+python3 -m http.server 8788 --directory dist
 ```
 
-然後把 service 的 `ExecStart` 改為：
+然後開啟：
+
+```text
+http://localhost:8788
+```
+
+# 以 user-mode systemd 啟動 Web UI
+
+以下設定會以目前使用者的 systemd 執行本機 HTTP server；不需要 `sudo`。範例假設 repository 位於 `~/WorkSpace/MathPad`，並只監聽本機的 `127.0.0.1:8788`。若實際路徑或連接埠不同，請一併修改 unit 內容。
+
+建立 user service：
+
+```bash
+mkdir -p ~/.config/systemd/user
+editor ~/.config/systemd/user/mathpad.service
+```
+
+將以下內容貼入 `~/.config/systemd/user/mathpad.service`：
 
 ```ini
-ExecStart=/usr/bin/caddy run --config %h/EngineeringPaper.xyz/Caddyfile
+[Unit]
+Description=mathpad local Web UI
+
+[Service]
+Type=simple
+WorkingDirectory=%h/WorkSpace/MathPad
+ExecStart=/usr/bin/python3 -m http.server 8788 --directory dist --bind 127.0.0.1
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+```
+
+載入設定、設為登入後自動啟動，並立刻啟動：
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now mathpad.service
+systemctl --user status mathpad.service
+```
+
+若希望登出後服務仍繼續執行，可額外執行：
+
+```bash
+loginctl enable-linger "$USER"
+```
+
+查看服務日誌：
+
+```bash
+journalctl --user -u mathpad.service -f
+```
+
+# 移除 user-mode systemd 設定
+
+停止服務、取消自動啟動並移除 unit 檔：
+
+```bash
+systemctl --user disable --now mathpad.service
+rm ~/.config/systemd/user/mathpad.service
+systemctl --user daemon-reload
+systemctl --user reset-failed mathpad.service
+```
+
+若先前曾為此服務啟用 linger，且這個使用者沒有其他需要在登出後繼續執行的 user service，才執行：
+
+```bash
+loginctl disable-linger "$USER"
 ```
 
 
-## 維護這個 Fork
+# 維護這個 Fork
 
 建議保留 `origin` 與 `upstream` 兩個 remote：
 
@@ -302,6 +308,3 @@ MathPad 繼承了 EngineeringPaper.xyz 的主要能力與依賴組合，包含�
 1. 文字的 cell 加上 上標， 下標的功能
 
 2. 試試看如果不需要 符號運算， 是否可以簡化 SymPy
-
-
-
