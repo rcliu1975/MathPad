@@ -24,8 +24,25 @@
 
   let hideToolbar = $derived(!(appState.activeCell === index));
 
+  function markdownWithScripts(ops: Delta['ops']): Delta['ops'] {
+    return ops.map((op) => {
+      if (typeof op.insert !== "string" || !op.attributes?.script) {
+        return op;
+      }
+
+      const tag = op.attributes.script === "super" ? "sup" : "sub";
+      const { script: _, ...attributes } = op.attributes;
+      return {
+        ...op,
+        insert: `<${tag}>${op.insert}</${tag}>`,
+        attributes,
+      };
+    });
+  }
+
   export function getMarkdown(centerEquations: boolean): string {
-    return deltaToMarkdown(documentationCell.documentationField.delta?.ops ?? "").replaceAll("\n", "\n\n").trimEnd() + "\n\n";
+    const ops = markdownWithScripts(documentationCell.documentationField.delta?.ops ?? []);
+    return deltaToMarkdown(ops).replaceAll("\n", "\n\n").trimEnd() + "\n\n";
   }
 
   onMount(() => {

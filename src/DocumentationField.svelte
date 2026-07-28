@@ -180,7 +180,7 @@
       modules: {
         toolbar: [
           [{ header: [1, 2, 3, false] }],
-          ['bold', 'italic', 'underline'],
+          ['bold', 'italic', 'underline', { script: 'super' }, { script: 'sub' }],
           [{ 'color': [] }, { 'background': [] }],
           [{list: 'ordered'}, {list: 'bullet'}],
           ['link', 'image', 'formula'],
@@ -216,6 +216,9 @@
       },
       theme: 'snow'  // or 'bubble'
     });
+
+    editorDiv.parentElement?.querySelector('button.ql-script[value="super"]')?.setAttribute('title', 'Superscript');
+    editorDiv.parentElement?.querySelector('button.ql-script[value="sub"]')?.setAttribute('title', 'Subscript');
 
     quill.on('text-change', (delta, oldDelta, source) => {
       update({detail: {delta: quill.getContents()}});
@@ -276,6 +279,25 @@
 
   :global(math-field.doc-field-math::part(content)) {
     padding: 1px;
+  }
+
+  :global(div.quill-wrapper button.ql-script) {
+    width: auto;
+    min-width: 28px;
+    padding: 3px 6px;
+    font-size: 13px;
+  }
+
+  :global(div.quill-wrapper button.ql-script svg) {
+    display: none;
+  }
+
+  :global(div.quill-wrapper button.ql-script[value="super"]::after) {
+    content: "x²";
+  }
+
+  :global(div.quill-wrapper button.ql-script[value="sub"]::after) {
+    content: "x₂";
   }
 
   div.hideToolbar :global(.ql-toolbar) {

@@ -293,6 +293,25 @@ test('Make sure documentation insert formula shortcut targets active documentati
   await expect(page.locator('#cell-2 >> text=β').first()).toBeVisible();
 });
 
+test('Apply superscript and subscript formatting in documentation cells', async () => {
+  await page.locator('#add-documentation-cell').click();
+  const superscriptCell = page.locator('#cell-1');
+  await superscriptCell.locator('.ql-editor').click();
+  await superscriptCell.locator('.ql-editor').type('x2');
+  await superscriptCell.locator('.ql-editor').press('Shift+ArrowLeft');
+  await superscriptCell.locator('button.ql-script[value="super"]').click();
+  await expect(superscriptCell.locator('sup')).toHaveText('2');
+
+  await page.locator('#add-documentation-cell').click();
+  const subscriptCell = page.locator('#cell-2');
+  await subscriptCell.locator('.ql-editor').click();
+  await subscriptCell.locator('.ql-editor').type('H2O');
+  await subscriptCell.locator('.ql-editor').press('ArrowLeft');
+  await subscriptCell.locator('.ql-editor').press('Shift+ArrowLeft');
+  await subscriptCell.locator('button.ql-script[value="sub"]').click();
+  await expect(subscriptCell.locator('sub')).toHaveText('2');
+});
+
 test('Test virtual keyboard pererving units tab choice when switching main tab', async () => {
   await page.locator('button').filter({ hasText: '11' }).click();
   await page.getByRole('button', { name: 'Units', exact: true }).click();
