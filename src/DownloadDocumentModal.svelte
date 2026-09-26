@@ -1,14 +1,12 @@
 <script lang="ts">
-  import { Modal, RadioButtonGroup, RadioButton, Checkbox, Select,
-           SelectItem } from "carbon-components-svelte";
+  import { Modal, RadioButtonGroup, RadioButton, Checkbox } from "carbon-components-svelte";
   import appState from "./stores.svelte";
 
   interface Props {
     open: boolean;
-    downloadDocument: (arg: {detail: {docType: "docx" | "pdf" | "md" | "tex", 
+    downloadDocument: (arg: {detail: {docType: "md",
                                       getShareableLink: boolean,
-                                      centerEquations: boolean,
-                                      paperSize: "a4" | "letter"
+                                      centerEquations: boolean
                                     }}) => void;
     downloadSheet: (arg: {detail: {saveAs: boolean}}) => void;
   }
@@ -19,7 +17,7 @@
     downloadSheet
   }: Props = $props();
 
-  let docType: "epxyz" | "docx" | "pdf" | "md" | "tex" = $state("epxyz");
+  let docType: "epxyz" | "md" = $state("epxyz");
   let getShareableLink = $state(false);
   let saveAs = $state(false);
 
@@ -30,8 +28,7 @@
     } else {
       downloadDocument({detail: {docType: docType, 
                                  getShareableLink: getShareableLink,
-                                 centerEquations: appState.exportCenteredEquations,
-                                 paperSize: appState.paperSize
+                                 centerEquations: appState.exportCenteredEquations
                                 }});
     }
   }
@@ -68,9 +65,6 @@
     >
       <RadioButton labelText="Native MathPad .epxyz Sheet File (no data leaves your computer)" value="epxyz"/>
       <RadioButton labelText="Markdown File (no data leaves your computer)" value="md" />
-      <RadioButton labelText="Microsoft Word .docx File (processed on the MathPad server, no data is retained on the server)" value="docx" />
-      <RadioButton labelText="PDF File (processed on the MathPad server, no data is retained on the server)" value="pdf" />
-      <RadioButton labelText="LaTeX File (images and plots are not included, processed on the MathPad server, no data is retained on the server)" value="tex" />
     </RadioButtonGroup>
     {#if window.showSaveFilePicker}
       <div>
@@ -83,17 +77,9 @@
       </div>
     {/if}
     <div>
-      <Select
-        labelText="Paper Size"
-        bind:selected={appState.paperSize}
-        disabled={docType === "epxyz" || docType === "md"}
-      >
-        <SelectItem value="letter" text="Letter" />
-        <SelectItem value="a4" text="A4" />
-      </Select>
       <div class="bx--label">Markdown Options</div>
       <Checkbox 
-        labelText="Create a shareable link and add it to the generated document (only applies to md, docx, pdf, and tex files, anyone with this private link will be able to view your original sheet)"
+        labelText="Create a shareable link and add it to the Markdown file (anyone with this private link will be able to view your original sheet)"
         bind:checked={getShareableLink}
         disabled={docType === "epxyz"}
       />
