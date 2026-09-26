@@ -254,6 +254,57 @@ systemctl --user reset-failed mathpad.service
 loginctl disable-linger "$USER"
 ```
 
+---
+
+# md-to-epxyz 工具
+
+`md-to-epxyz` 是一個完全在瀏覽器中執行的輕量工具，將 Markdown 檔案裡的獨立 LaTeX 公式區塊轉成 MathPad 可以開啟的 `.epxyz` 檔案。
+
+## 支援範圍
+
+### 支援的公式格式
+
+多行公式區塊：
+
+```md
+$$
+\frac{a}{b}
+$$
+```
+
+單行公式區塊：
+
+```md
+$$x = 2$$
+```
+
+不支援：行內 `$x^2$`、`\(...\)`、`\[...\]`、標題/段落/列表/表格/圖片、公式區塊內的 Markdown、LaTeX 自動修正。公式原樣寫入 math cell，其他內容忽略。
+
+## 使用
+
+### 開發環境：不用另外開 server，也不用先 npm run build。
+ 
+```bash
+npm run dev
+```
+
+然後開啟 `http://localhost:8788/md-to-epxyz/`。因為 public/ 會由 Vite dev server 直接提供，public/md-to-epxyz/ 會對應到 /md-to-epxyz/。   
+ 
+### 正式部署或測試 production build：需要執行：
+
+```bash
+npm run build
+```
+
+Vite 會把 public/md-to-epxyz/ 複製到   dist/md-to-epxyz/   
+ 
+之後再執行：
+ 
+```bash
+npm run preview
+```
+ 
+---
 
 # 維護這個 Fork
 
