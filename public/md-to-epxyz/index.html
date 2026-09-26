@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown 轉 .epxyz</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Markdown 公式轉 .epxyz</h1>
+    <p class="hint">只處理 <code>$$...$$</code> 獨立公式區塊，其他 Markdown 會忽略。</p>
+
+    <section class="card">
+      <label for="fileInput">選擇 Markdown 檔（.md）</label>
+      <input id="fileInput" type="file" accept=".md,.markdown,.txt" />
+      <div id="dropZone" class="drop-zone">或將 .md 檔拖放到這裡</div>
+      <div id="fileInfo" class="file-info"></div>
+    </section>
+
+    <section class="card">
+      <button id="convertBtn" disabled>轉換並下載 .epxyz</button>
+      <div id="errorBox" class="error" role="alert"></div>
+      <div id="statusBox" class="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>支援格式</h2>
+      <pre>$$
+x = 2
+$$</pre>
+      <pre>$$y = \frac{x^2}{3}$$</pre>
+      <p class="hint">不支援行內公式 <code>$x^2$</code>、標題、表格、圖片等。</p>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
