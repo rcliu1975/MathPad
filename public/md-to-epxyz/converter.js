@@ -134,6 +134,67 @@ export function extractFormulaBlocks(markdown) {
   return formulas;
 }
 
+/**
+ * 移除 LaTeX 公式中的 \\boxed{...} wrapper，保留 wrapper 內的內容。
+ * 使用大括號配對而非正則，避免被 \\frac{...}{...} 等巢狀內容截斷。
+ * 未完整配對的 \\boxed{} 會原樣保留。
+ */
+export function stripBoxed(formula) {
+  let result = String(formula ?? "");
+  let searchFrom = 0;
+
+  while (searchFrom < result.length) {
+    const commandIndex = result.indexOf("\\boxed", searchFrom);
+    if (commandIndex === -1) break;
+
+    let openIndex = commandIndex + "\\boxed".length;
+    while (/\s/.test(result[openIndex] ?? "")) openIndex += 1;
+
+    if (result[openIndex] !== "{") {
+      searchFrom = commandIndex + "\\boxed".length;
+      continue;
+    }
+
+    let depth = 0;
+    let closeIndex = -1;
+    let escaped = false;
+
+    for (let index = openIndex; index < result.length; index += 1) {
+      const character = result[index];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (character === "\\") {
+        escaped = true;
+        continue;
+      }
+      if (character === "{") {
+        depth += 1;
+      } else if (character === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          closeIndex = index;
+          break;
+        }
+      }
+    }
+
+    if (closeIndex === -1) {
+      searchFrom = commandIndex + "\\boxed".length;
+      continue;
+    }
+
+    result = result.slice(0, commandIndex) +
+      result.slice(openIndex + 1, closeIndex).trim() +
+      result.slice(closeIndex + 1);
+    searchFrom = Math.max(0, commandIndex - 1);
+  }
+
+  return result;
+}
+
 export function createEpxyz(formulas, title) {
   const safeTitle =
     typeof title === "string" && title.trim() !== ""
@@ -170,7 +231,7 @@ export function createEpxyz(formulas, title) {
 }
 
 export function convertMarkdownToEpxyz(markdown, title) {
-  const formulas = extractFormulaBlocks(markdown);
+  const formulas = extractFormulaBlocks(markdown).map(stripBoxed);
   const doc = createEpxyz(formulas, title);
   return JSON.stringify(doc, null, 2);
 }
