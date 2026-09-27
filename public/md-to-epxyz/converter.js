@@ -144,7 +144,9 @@ export function createEpxyz(formulas, title) {
     type: "math",
     id: index,
     latex,
-    config: null
+    config: {
+      disableCalculation: true
+    }
   }));
 
   const data = {
