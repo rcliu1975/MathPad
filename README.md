@@ -9,6 +9,15 @@ MathPad 是從 [engineeringpaper.xyz](https://engineeringpaper.xyz) / [mgreminge
 - 教學影片: [tutorial video](https://youtu.be/r7EZQVhcr5Q)
 - 延伸說明: [learning EngineeringPaper.xyz](https://blog.engineeringpaper.xyz/engineeringpaperxyz-tutorial)
 
+---
+
+# 公式 Cell 使用技巧
+
+- 輸入一般 latex equation: 公式 cell 是用 latex equation 存在，直接 copy latex equation 原始碼貼上即可。
+
+
+---
+
 本 README 主要整理 `MathPad` 的開發、建置、測試與部署資訊。
 
 ## 專案概要
