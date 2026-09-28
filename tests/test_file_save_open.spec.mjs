@@ -328,7 +328,7 @@ test('Test markdown export', async ({ page, browserName }) => {
   // export the sheet as markdown, need to use download event to get the file path that the browser uses
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Save Sheet to File in Various' }).click();
-  await page.locator('label').filter({ hasText: 'Markdown File' }).locator('span').first().click();
+  await expect(page.getByRole('radio', { name: /Markdown File/ })).toBeChecked();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const download = await downloadPromise;
   const mdPath = await download.path();
@@ -387,6 +387,5 @@ test('Test data table initial load detection bug', async ({ page, browserName })
 
   expect(page.url()).not.toContain('temp-checkpoint');
 });
-
 
 

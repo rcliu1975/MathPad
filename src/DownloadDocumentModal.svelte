@@ -17,7 +17,7 @@
     downloadSheet
   }: Props = $props();
 
-  let docType: "epxyz" | "md" = $state("epxyz");
+  let docType: "epxyz" | "md" = $state("md");
   let getShareableLink = $state(false);
   let saveAs = $state(false);
 
